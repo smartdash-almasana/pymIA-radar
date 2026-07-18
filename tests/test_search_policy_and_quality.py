@@ -83,3 +83,21 @@ def test_short_contextless_mention_is_insufficient() -> None:
     assert assessment.status == "insufficient"
     assert "thin_content" in assessment.negative_signals
     assert "context" in assessment.missing_fields
+
+
+def test_search_catalog_v2_loads_with_broader_queries() -> None:
+    catalog = load_search_query_catalog(Path("config/search_queries.v2.json"))
+    assert catalog.schema_version == "radar-search-queries/v2"
+    assert catalog.client == "Inlak'ech"
+    assert len(catalog.queries) == 20
+    assert len({query.id for query in catalog.queries}) == 20
+    assert {query.language for query in catalog.queries} == {"es", "en"}
+    assert all('"' not in query.query for query in catalog.queries)
+    assert all(2 <= len(query.query.split()) <= 5 for query in catalog.queries)
+
+
+def test_search_catalog_v2_preserves_v1() -> None:
+    v1 = load_search_query_catalog(Path("config/search_queries.v1.json"))
+    v2 = load_search_query_catalog(Path("config/search_queries.v2.json"))
+    assert v1.schema_version != v2.schema_version
+    assert {item.id for item in v1.queries}.isdisjoint({item.id for item in v2.queries})

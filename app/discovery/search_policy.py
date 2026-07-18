@@ -14,7 +14,7 @@ class SearchQuery(BaseModel):
 
 
 class SearchQueryCatalog(BaseModel):
-    schema_version: Literal["radar-search-queries/v1"]
+    schema_version: Literal["radar-search-queries/v1", "radar-search-queries/v2"]
     client: Literal["Inlak'ech"]
     queries: list[SearchQuery] = Field(min_length=1)
 

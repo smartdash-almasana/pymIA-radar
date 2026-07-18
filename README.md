@@ -12,6 +12,8 @@ RADAR no es el proyecto global. Es un instrumento comercial y de inteligencia pa
 
 La autoridad principal del producto es `docs/RADAR_MANDATORY_OBJECTIVE_DECLARATION.md`.
 
+El contrato funcional integral es `docs/RADAR_COMMERCIAL_CONVERSION_CONTRACT.md`.
+
 La política rectora para localizar conversaciones de peso es `docs/RADAR_SEARCH_ENGAGEMENT_TEXT.md`.
 
 ## Objetivo
@@ -21,17 +23,21 @@ Encontrar conversaciones públicas afines a Inlak'ech, analizarlas con evidencia
 ## Arquitectura
 
 ```text
-last30days-skill
+motores de descubrimiento y captura asistida
         ↓
-adaptador de descubrimiento
+normalización, persistencia y deduplicación
         ↓
-motor de afinidad e intención
+evaluación multidimensional con evidencia
         ↓
 bandeja de revisión humana
         ↓
-Relaticle
+acercamiento humano y registro de respuesta
         ↓
-cuestionario de precalificación
+precalificación y consentimiento
+        ↓
+lead calificado
+        ↓
+transferencia controlada a Relaticle
 ```
 
 ## Requisitos

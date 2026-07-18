@@ -1,6 +1,6 @@
 # SPEC-002 — Afinidad e intención
 
-**Estado:** DRAFT
+**Estado:** APPROVED
 
 ## Propósito
 
@@ -17,15 +17,21 @@ El texto rector de búsqueda orienta qué conversaciones localizar, pero no reem
 
 ## Salidas obligatorias
 
-- relevancia;
-- puntaje de afinidad;
-- puntaje de intención;
-- arquetipo probable;
-- etapa;
-- evidencias;
-- faltantes;
-- señales de riesgo;
+- afinidad temática `0–100`;
+- afinidad de valores `0–100`;
+- intención `0–100`;
+- capacidad declarada, sin inferencias;
+- momento de decisión;
+- calidad de evidencia `0–100`;
+- riesgo de falso positivo;
+- prioridad para revisión humana;
+- arquetipo probable, confianza y evidencia;
+- fragmentos justificativos;
+- objeciones;
+- información faltante;
 - acción recomendada.
+
+La salida debe cumplir `docs/RADAR_COMMERCIAL_CONVERSION_CONTRACT.md`.
 
 ## Reglas
 

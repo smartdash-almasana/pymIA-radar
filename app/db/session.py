@@ -9,7 +9,8 @@ class Base(DeclarativeBase):
     pass
 
 def init_db() -> None:
-    from app.models import conversation, assessment, review
+    from app.models import assessment, conversation, engagement, qualification, review
+
     Base.metadata.create_all(bind=engine)
 
 def get_db():

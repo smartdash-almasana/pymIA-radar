@@ -1,0 +1,141 @@
+{
+  "schema_version": "radar-conversational-scanning-matrix/v1",
+  "client": "Inlak'ech",
+  "territorial_center": "Chichen Itza, Yucatan, Mexico",
+  "source_families": [
+    {
+      "id": "S001",
+      "priority": 1,
+      "name": "Reddit",
+      "access_mode": "PUBLIC_AUTOMATABLE",
+      "integration_mode": "automatic",
+      "value": "PRIORIDAD_1",
+      "conversation_types": ["questions", "personal_experience", "comparisons", "objections", "recommendations"],
+      "intent_types": ["investment", "residence", "participation", "visit", "learning"],
+      "territorial_terms": ["Chichen Itza", "Piste", "Valladolid", "Yucatan", "Mexico"],
+      "restrictions": ["public_content_only", "no_private_groups", "human_review_before_contact"]
+    },
+    {
+      "id": "S002",
+      "priority": 2,
+      "name": "YouTube comments and replies",
+      "access_mode": "PUBLIC_AUTOMATABLE",
+      "integration_mode": "automatic",
+      "value": "PRIORIDAD_1",
+      "conversation_types": ["questions", "replies", "cost_queries", "participation_queries", "legal_questions"],
+      "intent_types": ["investment", "residence", "participation", "visit", "learning"],
+      "territorial_terms": ["Chichen Itza", "Valladolid", "Yucatan", "Mexico"],
+      "restrictions": ["exclude_generic_praise", "exclude_emojis_only", "human_review_before_contact"]
+    },
+    {
+      "id": "S003",
+      "priority": 3,
+      "name": "Specialized forums",
+      "access_mode": "PUBLIC_ASSISTED",
+      "integration_mode": "automatic_or_assisted",
+      "value": "PRIORIDAD_1",
+      "conversation_types": ["threads", "comparisons", "due_diligence", "residence_questions", "community_search"],
+      "intent_types": ["investment", "residence", "participation", "collaboration"],
+      "territorial_terms": ["Chichen Itza", "Piste", "Valladolid", "Yucatan", "Mexico"],
+      "restrictions": ["respect_site_terms", "no_closed_forums", "retain_thread_context"]
+    },
+    {
+      "id": "S004",
+      "priority": 4,
+      "name": "X / Twitter",
+      "access_mode": "REGISTRATION_REQUIRED",
+      "integration_mode": "automatic_when_authorized",
+      "value": "PRIORIDAD_1",
+      "conversation_types": ["threads", "questions", "recommendations", "comparisons", "objections"],
+      "intent_types": ["investment", "collaboration", "participation", "learning"],
+      "territorial_terms": ["Chichen Itza", "Yucatan", "Mexico"],
+      "restrictions": ["authorized_access_only", "exclude_reposts_without_comment", "exclude_automation"]
+    },
+    {
+      "id": "S005",
+      "priority": 5,
+      "name": "LinkedIn public",
+      "access_mode": "PUBLIC_ASSISTED",
+      "integration_mode": "assisted_or_listening_tool",
+      "value": "PRIORIDAD_1",
+      "conversation_types": ["professional_posts", "deep_comments", "partnership_interest", "investment_analysis"],
+      "intent_types": ["investment", "collaboration", "participation"],
+      "territorial_terms": ["Yucatan", "Mexico", "Chichen Itza"],
+      "restrictions": ["no_mass_authenticated_extraction", "public_content_only", "human_review_required"]
+    },
+    {
+      "id": "S006",
+      "priority": 6,
+      "name": "Facebook public",
+      "access_mode": "PUBLIC_ASSISTED",
+      "integration_mode": "assisted",
+      "value": "PRIORIDAD_1",
+      "conversation_types": ["public_group_posts", "questions", "relocation", "investment", "local_experience"],
+      "intent_types": ["residence", "investment", "participation", "visit"],
+      "territorial_terms": ["Chichen Itza", "Piste", "Valladolid", "Yucatan"],
+      "restrictions": ["public_groups_only", "no_private_accounts", "no_closed_group_scraping"]
+    },
+    {
+      "id": "S007",
+      "priority": 7,
+      "name": "Instagram public",
+      "access_mode": "PUBLIC_AUTOMATABLE",
+      "integration_mode": "automatic_when_configured",
+      "value": "PRIORIDAD_2",
+      "conversation_types": ["questions", "contact_requests", "availability_queries", "participation_queries"],
+      "intent_types": ["investment", "participation", "visit", "learning"],
+      "territorial_terms": ["Chichen Itza", "Valladolid", "Yucatan"],
+      "restrictions": ["exclude_emojis", "exclude_one_word_comments", "exclude_promotional_mentions"]
+    },
+    {
+      "id": "S008",
+      "priority": 8,
+      "name": "Quora and question-answer spaces",
+      "access_mode": "PUBLIC_ASSISTED",
+      "integration_mode": "automatic_or_assisted",
+      "value": "PRIORIDAD_2",
+      "conversation_types": ["questions", "answers", "objections", "market_language"],
+      "intent_types": ["learning", "residence", "investment"],
+      "territorial_terms": ["Yucatan", "Mexico", "Chichen Itza"],
+      "restrictions": ["do_not_assume_commercial_intent", "retain_answer_context"]
+    },
+    {
+      "id": "S009",
+      "priority": 9,
+      "name": "Blogs media newsletters and public comments",
+      "access_mode": "PUBLIC_ASSISTED",
+      "integration_mode": "automatic_or_assisted",
+      "value": "PRIORIDAD_2",
+      "conversation_types": ["reader_comments", "testimonials", "questions", "debate"],
+      "intent_types": ["learning", "visit", "residence", "investment"],
+      "territorial_terms": ["Chichen Itza", "Valladolid", "Yucatan", "Mexico"],
+      "restrictions": ["editorial_content_is_not_candidate", "require_additional_person_signal"]
+    },
+    {
+      "id": "S010",
+      "priority": 10,
+      "name": "Hacker News GitHub Discussions and technical communities",
+      "access_mode": "PUBLIC_AUTOMATABLE",
+      "integration_mode": "automatic",
+      "value": "PRIORIDAD_3",
+      "conversation_types": ["technical_discussion", "governance", "cooperative_models", "impact_projects"],
+      "intent_types": ["collaboration", "participation", "learning"],
+      "territorial_terms": ["Mexico", "Yucatan"],
+      "restrictions": ["complementary_source", "not_primary_for_direct_investment"]
+    }
+  ],
+  "shared_positive_signals": [
+    "specific_question", "personal_experience", "comparison", "explicit_objection", "pending_decision",
+    "declared_intent", "budget_reference", "timeline_reference", "location_reference", "multiple_participants",
+    "author_followup", "investment_reference", "participation_interest", "recommendation_request",
+    "contact_request", "risk_analysis", "legacy_language", "rejection_of_speculation"
+  ],
+  "shared_exclusion_signals": [
+    "advertising", "brand_content", "automated_post", "news_without_conversation", "generic_inspiration",
+    "superficial_tourism", "academic_task", "one_word_comment", "emoji_only", "generic_spirituality",
+    "promotion", "giveaway", "spam", "duplicate_content", "short_term_speculation", "get_rich_quick"
+  ],
+  "mandatory_dimensions": [
+    "conversation_quality", "affinity", "intent", "capacity_declared", "qualification", "human_review"
+  ]
+}

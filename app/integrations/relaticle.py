@@ -1,20 +1,21 @@
-import httpx
-from app.core.config import settings
+from __future__ import annotations
+
+from app.crm_transfer import CRMTransferPayload
+
+
+class RelaticleIntegrationNotAudited(RuntimeError):
+    pass
+
 
 class RelaticleClient:
-    def __init__(self) -> None:
-        self.base_url = settings.relaticle_base_url.rstrip("/")
-        self.headers = {}
-        if settings.relaticle_api_token:
-            self.headers["Authorization"] = f"Bearer {settings.relaticle_api_token}"
+    """Boundary for a future audited Relaticle integration.
 
-    async def create_candidate(self, payload: dict) -> dict:
-        """La ruta exacta debe validarse durante la auditoría de Relaticle."""
-        async with httpx.AsyncClient(timeout=30) as client:
-            response = await client.post(
-                f"{self.base_url}/api/people",
-                json=payload,
-                headers=self.headers,
-            )
-            response.raise_for_status()
-            return response.json()
+    No endpoint, authentication scheme, entity name or payload shape may be
+    assumed before the external repository/API is inspected and documented.
+    """
+
+    async def transfer_qualified_lead(self, payload: CRMTransferPayload) -> dict:
+        raise RelaticleIntegrationNotAudited(
+            "Relaticle integration is blocked until its real API contract is audited; "
+            "no external request was sent."
+        )

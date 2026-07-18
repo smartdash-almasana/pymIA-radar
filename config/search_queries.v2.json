@@ -1,0 +1,26 @@
+{
+  "schema_version": "radar-search-queries/v2",
+  "client": "Inlak'ech",
+  "queries": [
+    {"id":"Q101","language":"es","query":"inversión de impacto México"},
+    {"id":"Q102","language":"es","query":"inversión sustentable México"},
+    {"id":"Q103","language":"es","query":"proyectos con propósito inversión"},
+    {"id":"Q104","language":"es","query":"ecoaldeas México experiencias"},
+    {"id":"Q105","language":"es","query":"comunidades intencionales México"},
+    {"id":"Q106","language":"es","query":"vivir en comunidad México"},
+    {"id":"Q107","language":"es","query":"turismo sustentable inversión México"},
+    {"id":"Q108","language":"es","query":"hospitalidad sustentable México"},
+    {"id":"Q109","language":"es","query":"proyecto inmobiliario sustentable México"},
+    {"id":"Q110","language":"es","query":"invertir en Yucatán"},
+    {"id":"Q111","language":"es","query":"vivir en Yucatán comunidad"},
+    {"id":"Q112","language":"es","query":"patrimonio largo plazo México"},
+    {"id":"Q113","language":"en","query":"impact investing Mexico"},
+    {"id":"Q114","language":"en","query":"sustainable investment Mexico"},
+    {"id":"Q115","language":"en","query":"regenerative development Mexico"},
+    {"id":"Q116","language":"en","query":"intentional communities Mexico"},
+    {"id":"Q117","language":"en","query":"ecovillage Mexico experience"},
+    {"id":"Q118","language":"en","query":"sustainable hospitality Mexico"},
+    {"id":"Q119","language":"en","query":"eco lodge Mexico investment"},
+    {"id":"Q120","language":"en","query":"Yucatan long term investment"}
+  ]
+}

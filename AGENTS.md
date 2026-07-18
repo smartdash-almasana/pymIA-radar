@@ -14,6 +14,8 @@ Toda intervención debe obedecer primero `docs/RADAR_MANDATORY_OBJECTIVE_DECLARA
 
 Ese documento define el producto, el cliente único, el flujo obligatorio, el criterio de éxito y la definición de terminado. Ninguna decisión técnica puede contradecirlo.
 
+El contrato funcional integral es `docs/RADAR_COMMERCIAL_CONVERSION_CONTRACT.md`. Define el recorrido desde conversación detectada hasta lead calificado y transferencia controlada a Relaticle. La cartografía de fuentes y las consultas quedan subordinadas a ese recorrido.
+
 La política canónica para localizar conversaciones sustantivas es `docs/RADAR_SEARCH_ENGAGEMENT_TEXT.md`. No debe tratarse como una consulta literal única, sino como criterio rector para construir, evaluar y refinar búsquedas.
 
 ## Misión única

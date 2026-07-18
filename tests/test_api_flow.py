@@ -46,23 +46,77 @@ def test_local_conversation_flow_persists_deduplicates_assesses_and_reviews() ->
         assessment = client.post(f"/api/conversations/{conversation_id}/assess")
         assert assessment.status_code == 200
         assessment_body = assessment.json()
-        assert assessment_body["relevant"] is True
-        assert assessment_body["recommended_action"] == "human_review"
-        assert assessment_body["evidence"]
+        assert assessment_body["thematic_affinity"] > 0
+        assert assessment_body["values_affinity"] > 0
+        assert assessment_body["intent_score"] > 0
+        assert assessment_body["declared_capacity"] == "NO_CONOCIDA"
+        assert assessment_body["human_review_required"] is True
+        assert assessment_body["provisional"] is True
+        assert assessment_body["evidence_fragments"]
+
+        blocked_contact = client.post(
+            f"/api/conversations/{conversation_id}/engagement-events",
+            json={
+                "event_type": "CONTACTED",
+                "channel": "public_forum",
+                "message_text": "Mensaje todavía no aprobado",
+                "occurred_at": "2026-07-18T12:00:00Z",
+            },
+        )
+        assert blocked_contact.status_code == 409
 
         reviewed = client.post(
-            f"/api/conversations/{conversation_id}/review",
-            params={
-                "decision": "approved",
-                "reviewer_notes": "Aprobado durante la validación local de M0",
+            f"/api/conversations/{conversation_id}/reviews",
+            json={
+                "decision": "APPROVE_APPROACH",
+                "edited_response": "Hola. Leí tu reflexión y quisiera compartirte Inlak'ech.",
+                "reviewer_notes": "Aprobado durante la validación local",
             },
         )
         assert reviewed.status_code == 200
-        assert reviewed.json() == {"status": "ok", "decision": "approved"}
+        assert reviewed.json()["decision"] == "APPROVE_APPROACH"
+
+        contacted = client.post(
+            f"/api/conversations/{conversation_id}/engagement-events",
+            json={
+                "event_type": "CONTACTED",
+                "channel": "public_forum",
+                "message_text": "Hola. Leí tu reflexión y quisiera compartirte Inlak'ech.",
+                "occurred_at": "2026-07-18T12:00:00Z",
+            },
+        )
+        assert contacted.status_code == 200
+        assert contacted.json()["event_type"] == "CONTACTED"
+
+        replied = client.post(
+            f"/api/conversations/{conversation_id}/engagement-events",
+            json={
+                "event_type": "REPLIED",
+                "channel": "public_forum",
+                "response_text": "Gracias, me interesa conocer el proyecto.",
+                "occurred_at": "2026-07-18T13:00:00Z",
+            },
+        )
+        assert replied.status_code == 200
+
+        review_history = client.get(
+            f"/api/conversations/{conversation_id}/reviews"
+        )
+        assert review_history.status_code == 200
+        assert len(review_history.json()) == 1
+
+        engagement_history = client.get(
+            f"/api/conversations/{conversation_id}/engagement-events"
+        )
+        assert engagement_history.status_code == 200
+        assert [item["event_type"] for item in engagement_history.json()] == [
+            "CONTACTED",
+            "REPLIED",
+        ]
 
         refreshed = client.get("/api/conversations")
         assert refreshed.status_code == 200
         reviewed_item = next(
             item for item in refreshed.json() if item["id"] == conversation_id
         )
-        assert reviewed_item["status"] == "approved"
+        assert reviewed_item["status"] == "REPLIED"
