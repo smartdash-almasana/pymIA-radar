@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: inlakech
+      POSTGRES_USER: inlakech
+      POSTGRES_PASSWORD: inlakech
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inlakech -d inlakech"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  radar:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - ./last30days-skill-main:/opt/last30days-skill:ro
+
+volumes:
+  postgres-data:

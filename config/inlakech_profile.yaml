@@ -1,0 +1,53 @@
+project_name: "Inlak'ech"
+
+minimum_deterministic_score: 20
+
+archetypes:
+  - pionero_visionario
+  - sembrador_paciente
+  - artifice_regenerativo
+
+values:
+  - regeneración
+  - comunidad
+  - legado
+  - belleza útil
+  - paciencia estratégica
+  - honestidad
+  - territorio
+  - inversión consciente
+  - turismo sustentable
+  - pertenencia
+
+positive_signals:
+  - inversión regenerativa
+  - inversión consciente
+  - inversión de impacto
+  - ecoaldea
+  - turismo sustentable
+  - proyecto con propósito
+  - comunidad intencional
+  - legado
+  - largo plazo
+  - regeneración
+  - patrimonio
+  - Yucatán
+  - Chichén Itzá
+  - eco lodge
+  - hospitality investment
+  - regenerative real estate
+
+negative_signals:
+  - turismo de paso
+  - vacaciones baratas
+  - retorno rápido
+  - especulación inmediata
+  - dinero fácil
+  - estafa
+  - tarea escolar
+
+ethical_constraints:
+  - no_manipulation
+  - no_artificial_urgency
+  - no_cultural_appropriation
+  - human_review_required

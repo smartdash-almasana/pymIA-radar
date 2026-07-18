@@ -1,0 +1,36 @@
+questions:
+  - id: participation_type
+    text: "¿Qué tipo de participación le interesa?"
+    type: select
+    options:
+      - patrimonial
+      - renta
+      - participación activa
+      - exploración inicial
+
+  - id: resource_range
+    text: "¿En qué rango de inversión está pensando?"
+    type: select
+    options:
+      - por definir
+      - hasta 25000
+      - 25000-50000
+      - 50000-100000
+      - más de 100000
+
+  - id: time_horizon
+    text: "¿En qué plazo podría avanzar?"
+    type: select
+    options:
+      - inmediato
+      - 1-3 meses
+      - 3-6 meses
+      - más adelante
+
+  - id: motivation
+    text: "¿Qué aspecto del proyecto le interesa más?"
+    type: textarea
+
+  - id: consent
+    text: "¿Autoriza que el equipo de Inlak'ech se contacte con usted?"
+    type: boolean
