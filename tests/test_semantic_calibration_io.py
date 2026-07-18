@@ -41,3 +41,51 @@ def test_draft_corpus_cannot_mark_radar_ready_for_pilot() -> None:
 
     assert report.corpus_human_validated is False
     assert report.ready_for_pilot is False
+
+
+def test_human_validated_corpus_rejects_machine_seeded_labels() -> None:
+    import pytest
+    from pydantic import ValidationError
+
+    from app.semantics.calibration import HumanAssessmentLabel
+    from app.semantics.calibration_io import CalibrationCorpus
+
+    case = HumanAssessmentLabel(
+        case_id="machine-seeded",
+        text="Texto de prueba",
+        label_provenance="MACHINE_SEEDED_REQUIRES_HUMAN_REVIEW",
+        expected_action=ReviewAction.DISCARD,
+        expected_stage=DecisionStage.DISCOVERY,
+        expected_thematic_affinity=10,
+        expected_values_affinity=10,
+        expected_intent_score=0,
+    )
+
+    with pytest.raises(ValidationError, match="label_provenance=HUMAN_VALIDATED"):
+        CalibrationCorpus(
+            status="HUMAN_VALIDATED",
+            reviewed_by="Revisor",
+            cases=[case],
+        )
+
+
+def test_human_validated_corpus_requires_named_reviewer() -> None:
+    import pytest
+    from pydantic import ValidationError
+
+    from app.semantics.calibration import HumanAssessmentLabel
+    from app.semantics.calibration_io import CalibrationCorpus
+
+    case = HumanAssessmentLabel(
+        case_id="human",
+        text="Texto de prueba",
+        label_provenance="HUMAN_VALIDATED",
+        expected_action=ReviewAction.DISCARD,
+        expected_stage=DecisionStage.DISCOVERY,
+        expected_thematic_affinity=10,
+        expected_values_affinity=10,
+        expected_intent_score=0,
+    )
+
+    with pytest.raises(ValidationError, match="reviewed_by is required"):
+        CalibrationCorpus(status="HUMAN_VALIDATED", cases=[case])

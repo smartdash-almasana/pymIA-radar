@@ -14,6 +14,10 @@ from app.schemas.assessment import (
 class HumanAssessmentLabel(BaseModel):
     case_id: str
     text: str = Field(min_length=1)
+    source_conversation_id: int | None = None
+    source_url: str | None = None
+    label_provenance: str = "HUMAN"
+    label_notes: str | None = None
     expected_action: ReviewAction
     expected_stage: DecisionStage
     expected_archetype: ProbableArchetype | None = None
