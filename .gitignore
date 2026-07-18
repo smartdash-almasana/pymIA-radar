@@ -14,3 +14,6 @@ postgres-data/
 # Repositorios externos locales
 last30days-skill-main/
 relaticle-main/
+
+# Datos de ejecución generados
+data/last30days-runs/

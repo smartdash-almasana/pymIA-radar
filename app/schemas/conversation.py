@@ -18,3 +18,10 @@ class ConversationRead(ConversationCreate):
     status: str
 
     model_config = {"from_attributes": True}
+
+
+def conversation_orm_payload(payload: ConversationCreate) -> dict:
+    """Return SQLAlchemy-ready values without losing datetime types."""
+    values = payload.model_dump(mode="python")
+    values["conversation_url"] = str(payload.conversation_url)
+    return values

@@ -26,4 +26,6 @@ Filtro determinístico más modelo estructurado, siempre con evidencia.
 
 ## D-007 — Infraestructura simple
 
-Docker Compose local y luego una única VM para la demostración remota.
+El desarrollo local puede ejecutarse sin Docker con Python, FastAPI y una base aislada para pruebas. Docker Compose queda como opción recomendada para empaquetado reproducible, validación de PostgreSQL en contenedor y despliegue posterior en una única VM.
+
+La ausencia o demora de Docker no bloquea el desarrollo funcional ni el cierre de la baseline local.

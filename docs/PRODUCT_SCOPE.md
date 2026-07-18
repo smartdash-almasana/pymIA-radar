@@ -1,12 +1,18 @@
 # Alcance del producto
 
-## Producto
+Este documento está subordinado a `RADAR_MANDATORY_OBJECTIVE_DECLARATION.md`, que constituye la definición obligatoria y canónica del producto.
 
-**Inlak'ech Radar**
+## Jerarquía del proyecto
 
-## Cliente
+**Proyecto global:** Inlak'ech.
 
-Un solo cliente y una sola configuración narrativa: Inlak'ech.
+**Instrumento comercial y de inteligencia:** RADAR.
+
+RADAR existe para ayudar a Inlak'ech a encontrar, comprender y acercarse a las personas correctas. No reemplaza ni redefine al proyecto Inlak'ech.
+
+## Alcance de RADAR
+
+Una sola configuración narrativa y comercial: Inlak'ech.
 
 ## Usuario principal
 

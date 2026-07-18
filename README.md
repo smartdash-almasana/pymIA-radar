@@ -2,9 +2,19 @@
 
 Sistema dedicado de prospección conversacional para Inlak'ech.
 
+## Definición canónica
+
+Inlak'ech es el proyecto global.
+
+RADAR no es el proyecto global. Es un instrumento comercial y de inteligencia para ayudar a Inlak'ech a encontrar a las personas correctas.
+
+## Declaración obligatoria
+
+La autoridad principal del producto es `docs/RADAR_MANDATORY_OBJECTIVE_DECLARATION.md`.
+
 ## Objetivo
 
-Encontrar conversaciones públicas afines al proyecto, analizarlas, someterlas a revisión humana y transferir candidatos aprobados a Relaticle para su precalificación comercial.
+Encontrar conversaciones públicas afines a Inlak'ech, analizarlas con evidencia, someterlas a revisión humana y facilitar el acercamiento comercial a las personas correctas.
 
 ## Arquitectura
 

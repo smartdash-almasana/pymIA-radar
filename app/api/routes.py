@@ -6,7 +6,11 @@ from app.db.session import get_db
 from app.models.conversation import Conversation
 from app.models.assessment import SemanticAssessment
 from app.models.review import ReviewDecision
-from app.schemas.conversation import ConversationCreate, ConversationRead
+from app.schemas.conversation import (
+    ConversationCreate,
+    ConversationRead,
+    conversation_orm_payload,
+)
 from app.schemas.assessment import AssessmentResult
 from app.semantics.classifier import classify_conversation
 
@@ -23,7 +27,7 @@ def create_conversation(payload: ConversationCreate, db: Session = Depends(get_d
     if existing:
         return existing
 
-    item = Conversation(**payload.model_dump(mode="json"))
+    item = Conversation(**conversation_orm_payload(payload))
     db.add(item)
     db.commit()
     db.refresh(item)
