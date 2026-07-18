@@ -62,7 +62,10 @@ def assess_conversation(conversation_id: int, db: Session = Depends(get_db)):
     result = assess_with_optional_llm(
         f"{conversation.title or ''}\n{conversation.text}\n{conversation.context or ''}",
         enabled=settings.semantic_llm_enabled,
-        model_name=settings.openai_model,
+        model_name=settings.semantic_llm_model or settings.openai_model,
+        provider_name=settings.semantic_llm_provider,
+        base_url=settings.semantic_llm_base_url,
+        api_key=settings.semantic_llm_api_key or settings.openai_api_key,
     )
     record = SemanticAssessment(
         conversation_id=conversation.id,

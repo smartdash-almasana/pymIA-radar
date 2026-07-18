@@ -8,6 +8,7 @@ from app.schemas.assessment import (
 from app.semantics.llm_classifier import (
     LLMAssessmentDraft,
     assess_with_optional_llm,
+    build_pydantic_ai_runner,
     finalize_llm_draft,
 )
 
@@ -85,3 +86,29 @@ def test_optional_llm_falls_back_when_runner_fails() -> None:
     assert result.provisional is True
     assert result.human_review_required is True
     assert result.declared_capacity == DeclaredCapacity.UNKNOWN
+
+
+def test_openai_compatible_provider_requires_base_url() -> None:
+    try:
+        build_pydantic_ai_runner(
+            "free-model",
+            provider_name="openai_compatible",
+            api_key="test-key",
+        )
+    except ValueError as exc:
+        assert "SEMANTIC_LLM_BASE_URL" in str(exc)
+    else:
+        raise AssertionError("Expected missing base URL to be rejected")
+
+
+def test_deepseek_provider_requires_api_key() -> None:
+    try:
+        build_pydantic_ai_runner(
+            "deepseek-model",
+            provider_name="deepseek",
+            base_url="https://example.invalid/v1",
+        )
+    except ValueError as exc:
+        assert "SEMANTIC_LLM_API_KEY" in str(exc)
+    else:
+        raise AssertionError("Expected missing API key to be rejected")

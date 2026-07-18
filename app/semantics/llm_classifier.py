@@ -92,12 +92,14 @@ def finalize_llm_draft(draft: LLMAssessmentDraft) -> AssessmentResult:
     )
 
 
-def build_pydantic_ai_runner(model_name: str) -> DraftRunner:
-    """Build a lazy Pydantic AI runner.
-
-    Importing this module never requires the optional AI dependency. The
-    dependency is loaded only when LLM mode is explicitly enabled.
-    """
+def build_pydantic_ai_runner(
+    model_name: str,
+    *,
+    provider_name: str = "default",
+    base_url: str | None = None,
+    api_key: str | None = None,
+) -> DraftRunner:
+    """Build a lazy Pydantic AI runner for native or OpenAI-compatible models."""
     try:
         from pydantic_ai import Agent
     except ImportError as exc:  # pragma: no cover - depends on optional package
@@ -105,8 +107,28 @@ def build_pydantic_ai_runner(model_name: str) -> DraftRunner:
             "Pydantic AI is not installed; install the project with the 'ai' extra"
         ) from exc
 
+    normalized_provider = provider_name.strip().lower()
+    model: object = model_name
+    if normalized_provider in {"deepseek", "openai_compatible", "ollama"}:
+        if not base_url:
+            raise ValueError(f"{normalized_provider} requires SEMANTIC_LLM_BASE_URL")
+        if normalized_provider != "ollama" and not api_key:
+            raise ValueError(f"{normalized_provider} requires SEMANTIC_LLM_API_KEY")
+        try:
+            from pydantic_ai.models.openai import OpenAIChatModel
+            from pydantic_ai.providers.openai import OpenAIProvider
+        except ImportError as exc:  # pragma: no cover - optional provider extra
+            raise RuntimeError("Pydantic AI OpenAI provider is not installed") from exc
+        provider = OpenAIProvider(
+            base_url=base_url,
+            api_key=api_key or "ollama",
+        )
+        model = OpenAIChatModel(model_name, provider=provider)
+    elif normalized_provider != "default":
+        raise ValueError(f"Unsupported semantic LLM provider: {provider_name}")
+
     agent = Agent(
-        model_name,
+        model,
         output_type=LLMAssessmentDraft,
         instructions=(
             "Analizá la conversación para RADAR de Inlak'ech. Separá afinidad temática, "
@@ -129,6 +151,9 @@ def assess_with_optional_llm(
     *,
     enabled: bool,
     model_name: str | None,
+    provider_name: str = "default",
+    base_url: str | None = None,
+    api_key: str | None = None,
     runner: DraftRunner | None = None,
 ) -> AssessmentResult:
     """Use the LLM when configured, otherwise fall back deterministically."""
@@ -136,7 +161,12 @@ def assess_with_optional_llm(
         return classify_conversation(text)
 
     try:
-        active_runner = runner or build_pydantic_ai_runner(model_name)
+        active_runner = runner or build_pydantic_ai_runner(
+            model_name,
+            provider_name=provider_name,
+            base_url=base_url,
+            api_key=api_key,
+        )
         return finalize_llm_draft(active_runner(text))
     except Exception:
         return classify_conversation(text)

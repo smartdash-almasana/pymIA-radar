@@ -7,6 +7,10 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     openai_model: str | None = None
     semantic_llm_enabled: bool = False
+    semantic_llm_provider: str = "default"
+    semantic_llm_base_url: str | None = None
+    semantic_llm_api_key: str | None = None
+    semantic_llm_model: str | None = None
     relaticle_base_url: str = "http://relaticle:8080"
     relaticle_api_token: str | None = None
     last30days_path: str = "/opt/last30days-skill"
