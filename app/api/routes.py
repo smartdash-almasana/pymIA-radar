@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.db.session import get_db
 from app.models.assessment import SemanticAssessment
 from app.models.conversation import Conversation
@@ -24,7 +25,7 @@ from app.schemas.review import (
     ReviewDecisionType,
     ReviewRead,
 )
-from app.semantics.classifier import classify_conversation
+from app.semantics.llm_classifier import assess_with_optional_llm
 
 router = APIRouter(prefix="/api")
 
@@ -58,8 +59,10 @@ def assess_conversation(conversation_id: int, db: Session = Depends(get_db)):
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
 
-    result = classify_conversation(
-        f"{conversation.title or ''}\n{conversation.text}\n{conversation.context or ''}"
+    result = assess_with_optional_llm(
+        f"{conversation.title or ''}\n{conversation.text}\n{conversation.context or ''}",
+        enabled=settings.semantic_llm_enabled,
+        model_name=settings.openai_model,
     )
     record = SemanticAssessment(
         conversation_id=conversation.id,

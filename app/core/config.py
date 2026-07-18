@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://inlakech:inlakech@postgres:5432/inlakech"
     openai_api_key: str | None = None
     openai_model: str | None = None
+    semantic_llm_enabled: bool = False
     relaticle_base_url: str = "http://relaticle:8080"
     relaticle_api_token: str | None = None
     last30days_path: str = "/opt/last30days-skill"
