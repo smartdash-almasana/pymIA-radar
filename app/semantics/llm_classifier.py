@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Protocol
 
 from pydantic import BaseModel, Field
@@ -146,6 +146,50 @@ def build_pydantic_ai_runner(
     return run
 
 
+@dataclass(frozen=True)
+class AssessmentExecution:
+    result: AssessmentResult
+    semantic_engine: str
+    model_name: str | None
+
+
+def assess_with_optional_llm_details(
+    text: str,
+    *,
+    enabled: bool,
+    model_name: str | None,
+    provider_name: str = "default",
+    base_url: str | None = None,
+    api_key: str | None = None,
+    runner: DraftRunner | None = None,
+) -> AssessmentExecution:
+    if not enabled or not model_name:
+        return AssessmentExecution(
+            result=classify_conversation(text),
+            semantic_engine="deterministic",
+            model_name=None,
+        )
+
+    try:
+        active_runner = runner or build_pydantic_ai_runner(
+            model_name,
+            provider_name=provider_name,
+            base_url=base_url,
+            api_key=api_key,
+        )
+        return AssessmentExecution(
+            result=finalize_llm_draft(active_runner(text)),
+            semantic_engine=f"llm:{provider_name}",
+            model_name=model_name,
+        )
+    except Exception:
+        return AssessmentExecution(
+            result=classify_conversation(text),
+            semantic_engine="deterministic_fallback",
+            model_name=model_name,
+        )
+
+
 def assess_with_optional_llm(
     text: str,
     *,
@@ -156,17 +200,13 @@ def assess_with_optional_llm(
     api_key: str | None = None,
     runner: DraftRunner | None = None,
 ) -> AssessmentResult:
-    """Use the LLM when configured, otherwise fall back deterministically."""
-    if not enabled or not model_name:
-        return classify_conversation(text)
-
-    try:
-        active_runner = runner or build_pydantic_ai_runner(
-            model_name,
-            provider_name=provider_name,
-            base_url=base_url,
-            api_key=api_key,
-        )
-        return finalize_llm_draft(active_runner(text))
-    except Exception:
-        return classify_conversation(text)
+    """Backward-compatible assessment result without execution metadata."""
+    return assess_with_optional_llm_details(
+        text,
+        enabled=enabled,
+        model_name=model_name,
+        provider_name=provider_name,
+        base_url=base_url,
+        api_key=api_key,
+        runner=runner,
+    ).result

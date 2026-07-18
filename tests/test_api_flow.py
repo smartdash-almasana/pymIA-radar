@@ -54,6 +54,18 @@ def test_local_conversation_flow_persists_deduplicates_assesses_and_reviews() ->
         assert assessment_body["provisional"] is True
         assert assessment_body["evidence_fragments"]
 
+        assessment_history = client.get(
+            f"/api/conversations/{conversation_id}/assessments"
+        )
+        assert assessment_history.status_code == 200
+        stored_assessment = assessment_history.json()[-1]
+        assert stored_assessment["thematic_affinity"] == assessment_body["thematic_affinity"]
+        assert stored_assessment["values_affinity"] == assessment_body["values_affinity"]
+        assert stored_assessment["intent_score"] == assessment_body["intent_score"]
+        assert stored_assessment["declared_capacity"] == "NO_CONOCIDA"
+        assert stored_assessment["semantic_engine"] == "deterministic"
+        assert stored_assessment["human_review_required"] is True
+
         blocked_contact = client.post(
             f"/api/conversations/{conversation_id}/engagement-events",
             json={

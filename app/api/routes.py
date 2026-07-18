@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.session import get_db
-from app.models.assessment import SemanticAssessment
+from app.models.assessment_v2 import SemanticAssessmentV2
 from app.models.conversation import Conversation
 from app.models.engagement import EngagementEvent
 from app.models.qualification import QualificationRecord
@@ -25,7 +25,7 @@ from app.schemas.review import (
     ReviewDecisionType,
     ReviewRead,
 )
-from app.semantics.llm_classifier import assess_with_optional_llm
+from app.semantics.llm_classifier import assess_with_optional_llm_details
 
 router = APIRouter(prefix="/api")
 
@@ -59,7 +59,7 @@ def assess_conversation(conversation_id: int, db: Session = Depends(get_db)):
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
 
-    result = assess_with_optional_llm(
+    execution = assess_with_optional_llm_details(
         f"{conversation.title or ''}\n{conversation.text}\n{conversation.context or ''}",
         enabled=settings.semantic_llm_enabled,
         model_name=settings.semantic_llm_model or settings.openai_model,
@@ -67,22 +67,32 @@ def assess_conversation(conversation_id: int, db: Session = Depends(get_db)):
         base_url=settings.semantic_llm_base_url,
         api_key=settings.semantic_llm_api_key or settings.openai_api_key,
     )
-    record = SemanticAssessment(
+    result = execution.result
+    record = SemanticAssessmentV2(
         conversation_id=conversation.id,
-        relevant=result.recommended_action.value != "DESCARTAR",
-        affinity_score=result.thematic_affinity,
-        investment_intent=result.intent_score,
+        thematic_affinity=result.thematic_affinity,
+        values_affinity=result.values_affinity,
+        intent_score=result.intent_score,
+        declared_capacity=result.declared_capacity.value,
+        decision_stage=result.decision_stage.value,
+        evidence_quality=result.evidence_quality,
+        false_positive_risk=result.false_positive_risk.value,
+        review_priority=result.review_priority,
         probable_archetype=(
             result.probable_archetype.value if result.probable_archetype else None
         ),
-        conversation_stage=result.decision_stage.value,
+        archetype_confidence=result.archetype_confidence,
+        archetype_evidence=result.archetype_evidence,
+        positive_signals=result.positive_signals,
+        negative_signals=result.negative_signals,
+        objections=result.objections,
+        missing_information=result.missing_information,
+        evidence_fragments=result.evidence_fragments,
         recommended_action=result.recommended_action.value,
-        evidence=result.evidence_fragments,
-        missing_data=result.missing_information,
-        risk_flags=[result.false_positive_risk.value, *result.negative_signals],
-        reasoning_summary=(
-            "Evaluación determinística provisional; requiere revisión humana."
-        ),
+        human_review_required=result.human_review_required,
+        provisional=result.provisional,
+        semantic_engine=execution.semantic_engine,
+        model_name=execution.model_name,
     )
     db.add(record)
     conversation.status = (
@@ -92,6 +102,48 @@ def assess_conversation(conversation_id: int, db: Session = Depends(get_db)):
     )
     db.commit()
     return result
+
+
+@router.get("/conversations/{conversation_id}/assessments")
+def list_assessments(conversation_id: int, db: Session = Depends(get_db)):
+    if not db.get(Conversation, conversation_id):
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    records = list(
+        db.scalars(
+            select(SemanticAssessmentV2)
+            .where(SemanticAssessmentV2.conversation_id == conversation_id)
+            .order_by(SemanticAssessmentV2.id.asc())
+        )
+    )
+    return [
+        {
+            "id": item.id,
+            "conversation_id": item.conversation_id,
+            "thematic_affinity": item.thematic_affinity,
+            "values_affinity": item.values_affinity,
+            "intent_score": item.intent_score,
+            "declared_capacity": item.declared_capacity,
+            "decision_stage": item.decision_stage,
+            "evidence_quality": item.evidence_quality,
+            "false_positive_risk": item.false_positive_risk,
+            "review_priority": item.review_priority,
+            "probable_archetype": item.probable_archetype,
+            "archetype_confidence": item.archetype_confidence,
+            "archetype_evidence": item.archetype_evidence,
+            "positive_signals": item.positive_signals,
+            "negative_signals": item.negative_signals,
+            "objections": item.objections,
+            "missing_information": item.missing_information,
+            "evidence_fragments": item.evidence_fragments,
+            "recommended_action": item.recommended_action,
+            "human_review_required": item.human_review_required,
+            "provisional": item.provisional,
+            "semantic_engine": item.semantic_engine,
+            "model_name": item.model_name,
+            "created_at": item.created_at,
+        }
+        for item in records
+    ]
 
 
 @router.post(
