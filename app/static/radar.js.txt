@@ -1,0 +1,231 @@
+const $=id=>document.getElementById(id);
+let conversations=[];
+let selected=null;
+
+async function api(url,options={}){
+  const response=await fetch(url,{headers:{'Content-Type':'application/json'},...options});
+  if(!response.ok){
+    let data={};
+    try{data=await response.json();}catch{}
+    throw new Error(data.detail||`Error ${response.status}`);
+  }
+  return response.status===204?null:response.json();
+}
+
+function escapeHtml(value){
+  return String(value??'').replace(/[&<>\"]/g,char=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'
+  })[char]);
+}
+
+function showToast(message,isError=false){
+  const toast=$('toast');
+  toast.textContent=message;
+  toast.className=`toast${isError?' error':''}`;
+  setTimeout(()=>toast.className='toast hidden',2600);
+}
+
+async function loadConversations(){
+  try{
+    await api('/health');
+    $('healthBadge').textContent='Operativo';
+    conversations=await api('/api/conversations');
+    renderConversationList();
+    if(selected){
+      selected=conversations.find(item=>item.id===selected.id)||null;
+      if(selected) renderRecord();
+    }
+  }catch(error){
+    $('healthBadge').textContent='Sin conexión';
+    showToast(error.message,true);
+  }
+}
+
+function renderConversationList(){
+  const query=$('searchInput').value.toLowerCase();
+  const status=$('statusFilter').value;
+  const rows=conversations.filter(item=>{
+    const matchesStatus=!status||item.status===status;
+    const values=[item.title,item.text,item.author_name,item.source];
+    const matchesQuery=!query||values.some(value=>(value||'').toLowerCase().includes(query));
+    return matchesStatus&&matchesQuery;
+  });
+  $('conversationCount').textContent=rows.length;
+  $('conversationList').innerHTML=rows.map(item=>`
+    <button class="conversation-item ${selected&&selected.id===item.id?'active':''}" data-id="${item.id}">
+      <strong>${escapeHtml(item.title||'Sin título')}</strong>
+      <span>${escapeHtml(item.source)} · ${escapeHtml(item.status)}</span>
+      <span>${escapeHtml((item.text||'').slice(0,120))}</span>
+    </button>`).join('')||'<p class="muted">Sin conversaciones.</p>';
+  document.querySelectorAll('.conversation-item').forEach(button=>{
+    button.onclick=()=>selectConversation(Number(button.dataset.id));
+  });
+}
+
+async function selectConversation(id){
+  selected=conversations.find(item=>item.id===id);
+  renderConversationList();
+  renderRecord();
+  await loadTimeline();
+}
+
+function renderRecord(){
+  if(!selected)return;
+  $('emptyState').classList.add('hidden');
+  $('recordView').classList.remove('hidden');
+  $('recordSource').textContent=selected.source;
+  $('recordTitle').textContent=selected.title||'Sin título';
+  $('recordAuthor').textContent=selected.author_name||'Autor no identificado';
+  $('recordStatus').textContent=selected.status;
+  $('recordUrl').href=selected.conversation_url;
+  $('recordText').textContent=selected.text;
+  $('recordContext').textContent=selected.context||'';
+  $('assessmentView').classList.add('hidden');
+  $('assessmentEmpty').classList.remove('hidden');
+}
+
+function showAssessment(result){
+  $('assessmentEmpty').classList.add('hidden');
+  $('assessmentView').classList.remove('hidden');
+  $('metricThematic').textContent=result.thematic_affinity;
+  $('metricValues').textContent=result.values_affinity;
+  $('metricIntent').textContent=result.intent_score;
+  $('metricEvidence').textContent=result.evidence_quality;
+  $('metricRisk').textContent=result.false_positive_risk;
+  $('metricAction').textContent=result.recommended_action;
+  $('evidenceList').innerHTML=(result.evidence_fragments||[])
+    .map(item=>`<li>${escapeHtml(item)}</li>`).join('')||'<li>Sin fragmentos.</li>';
+}
+
+async function loadTimeline(){
+  if(!selected)return;
+  try{
+    const [reviews,events,qualifications]=await Promise.all([
+      api(`/api/conversations/${selected.id}/reviews`),
+      api(`/api/conversations/${selected.id}/engagement-events`),
+      api(`/api/conversations/${selected.id}/qualifications`)
+    ]);
+    const items=[
+      ...reviews.map(item=>({at:item.created_at,title:`Decisión: ${item.decision}`,body:item.reviewer_notes||item.edited_response||''})),
+      ...events.map(item=>({at:item.occurred_at,title:`Evento: ${item.event_type}`,body:item.response_text||item.message_text||item.notes||''})),
+      ...qualifications.map(item=>({at:item.created_at,title:`Precalificación: ${item.traffic_light} · ${item.status}`,body:`Camino: ${item.recommended_path}. ${(item.reasons||[]).join(', ')}`}))
+    ].sort((a,b)=>new Date(b.at)-new Date(a.at));
+    $('timeline').innerHTML=items.map(item=>`
+      <div class="timeline-item">
+        <strong>${escapeHtml(item.title)}</strong>
+        <time>${new Date(item.at).toLocaleString()}</time>
+        <p>${escapeHtml(item.body)}</p>
+      </div>`).join('')||'<p class="muted">Sin historial todavía.</p>';
+  }catch(error){showToast(error.message,true);}
+}
+
+function isoFromInput(id){
+  const value=$(id).value;
+  return value?new Date(value).toISOString():new Date().toISOString();
+}
+
+$('refreshButton').onclick=loadConversations;
+$('searchInput').oninput=renderConversationList;
+$('statusFilter').onchange=renderConversationList;
+
+$('assessButton').onclick=async()=>{
+  try{
+    const result=await api(`/api/conversations/${selected.id}/assess`,{method:'POST'});
+    showAssessment(result);
+    await loadConversations();
+    showToast('Evaluación actualizada');
+  }catch(error){showToast(error.message,true);}
+};
+
+$('reviewForm').onsubmit=async event=>{
+  event.preventDefault();
+  try{
+    await api(`/api/conversations/${selected.id}/reviews`,{
+      method:'POST',
+      body:JSON.stringify({
+        decision:$('reviewDecision').value,
+        edited_response:$('reviewMessage').value||null,
+        reviewer_notes:$('reviewNotes').value||null
+      })
+    });
+    showToast('Decisión guardada');
+    await loadConversations();
+    await loadTimeline();
+  }catch(error){showToast(error.message,true);}
+};
+
+$('contactForm').onsubmit=async event=>{
+  event.preventDefault();
+  try{
+    await api(`/api/conversations/${selected.id}/engagement-events`,{
+      method:'POST',
+      body:JSON.stringify({
+        event_type:'CONTACTED',
+        channel:$('contactChannel').value,
+        message_text:$('contactMessage').value,
+        response_text:null,
+        notes:$('contactNotes').value||null,
+        occurred_at:isoFromInput('contactDate')
+      })
+    });
+    showToast('Contacto registrado');
+    await loadConversations();
+    await loadTimeline();
+  }catch(error){showToast(error.message,true);}
+};
+
+$('replyForm').onsubmit=async event=>{
+  event.preventDefault();
+  try{
+    await api(`/api/conversations/${selected.id}/engagement-events`,{
+      method:'POST',
+      body:JSON.stringify({
+        event_type:'REPLIED',
+        channel:null,
+        message_text:null,
+        response_text:$('replyText').value,
+        notes:$('replyNotes').value||null,
+        occurred_at:isoFromInput('replyDate')
+      })
+    });
+    showToast('Respuesta registrada');
+    await loadConversations();
+    await loadTimeline();
+  }catch(error){showToast(error.message,true);}
+};
+
+$('qualificationForm').onsubmit=async event=>{
+  event.preventDefault();
+  const payload={
+    identity_profile:$('qualificationProfile').value,
+    capital_band:$('qualificationCapital').value,
+    time_horizon:$('qualificationHorizon').value,
+    motivation_text:$('qualificationMotivation').value||null,
+    motivation_coherent:$('qualificationCoherent').checked,
+    artisan_anchor_type:$('qualificationAnchor').value||null,
+    artisan_anchor_evidence:$('qualificationAnchorEvidence').value||null,
+    declared_path_interest:$('qualificationPath').value||'NO_DEFINIDO',
+    consent_to_continue:$('qualificationConsent').checked,
+    requests_next_step:$('qualificationNextStep').checked,
+    minimum_information_complete:$('qualificationComplete').checked,
+    objections:[]
+  };
+  try{
+    const result=await api(`/api/conversations/${selected.id}/qualifications`,{
+      method:'POST',body:JSON.stringify(payload)
+    });
+    const box=$('qualificationResult');
+    const tone=result.traffic_light==='ROJO'?'red':result.traffic_light==='AMARILLO'?'yellow':'green';
+    box.className=`qualification-result badge ${tone}`;
+    box.textContent=`${result.traffic_light} · ${result.status} · ${result.recommended_path}`;
+    showToast('Precalificación guardada');
+    await loadConversations();
+    await loadTimeline();
+  }catch(error){showToast(error.message,true);}
+};
+
+const localNow=new Date();
+localNow.setMinutes(localNow.getMinutes()-localNow.getTimezoneOffset());
+$('contactDate').value=localNow.toISOString().slice(0,16);
+$('replyDate').value=localNow.toISOString().slice(0,16);
+loadConversations();
