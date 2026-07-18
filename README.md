@@ -12,6 +12,8 @@ RADAR no es el proyecto global. Es un instrumento comercial y de inteligencia pa
 
 La autoridad principal del producto es `docs/RADAR_MANDATORY_OBJECTIVE_DECLARATION.md`.
 
+La política rectora para localizar conversaciones de peso es `docs/RADAR_SEARCH_ENGAGEMENT_TEXT.md`.
+
 ## Objetivo
 
 Encontrar conversaciones públicas afines a Inlak'ech, analizarlas con evidencia, someterlas a revisión humana y facilitar el acercamiento comercial a las personas correctas.

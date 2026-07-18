@@ -147,9 +147,10 @@ class Last30DaysAdapter:
         try:
             completed = subprocess.run(
                 command,
-                cwd=self.repo_path,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=self.timeout_seconds,
                 check=False,
             )

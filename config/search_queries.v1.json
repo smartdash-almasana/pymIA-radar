@@ -1,0 +1,16 @@
+{
+  "schema_version": "radar-search-queries/v1",
+  "client": "Inlak'ech",
+  "queries": [
+    {"id":"Q001","language":"es","query":"\"inversión regenerativa\" México experiencias recomendaciones"},
+    {"id":"Q002","language":"es","query":"\"ecoaldea\" México invertir participar dudas"},
+    {"id":"Q003","language":"es","query":"\"proyecto sustentable\" Yucatán inversión largo plazo"},
+    {"id":"Q004","language":"es","query":"\"hospitalidad regenerativa\" México inversores"},
+    {"id":"Q005","language":"es","query":"\"inversión de impacto\" turismo sustentable México"},
+    {"id":"Q006","language":"es","query":"\"comunidad intencional\" México vivir invertir"},
+    {"id":"Q007","language":"en","query":"\"regenerative real estate\" Mexico investment"},
+    {"id":"Q008","language":"en","query":"\"eco lodge investment\" Mexico experiences"},
+    {"id":"Q009","language":"en","query":"\"sustainable hospitality investment\" Yucatan"},
+    {"id":"Q010","language":"en","query":"\"intentional community\" Mexico investment"}
+  ]
+}

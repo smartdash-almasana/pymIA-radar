@@ -14,6 +14,8 @@ Toda intervención debe obedecer primero `docs/RADAR_MANDATORY_OBJECTIVE_DECLARA
 
 Ese documento define el producto, el cliente único, el flujo obligatorio, el criterio de éxito y la definición de terminado. Ninguna decisión técnica puede contradecirlo.
 
+La política canónica para localizar conversaciones sustantivas es `docs/RADAR_SEARCH_ENGAGEMENT_TEXT.md`. No debe tratarse como una consulta literal única, sino como criterio rector para construir, evaluar y refinar búsquedas.
+
 ## Misión única
 
 Construir una solución dedicada exclusivamente a Inlak'ech que:

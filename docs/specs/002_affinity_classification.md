@@ -6,6 +6,15 @@
 
 Evaluar conversaciones según la configuración específica de Inlak'ech.
 
+## Entradas rectoras
+
+- `docs/RADAR_MANDATORY_OBJECTIVE_DECLARATION.md`;
+- `docs/RADAR_SEARCH_ENGAGEMENT_TEXT.md`;
+- conversaciones reales normalizadas por SPEC-001;
+- corpus positivo, negativo y ambiguo construido con evidencia.
+
+El texto rector de búsqueda orienta qué conversaciones localizar, pero no reemplaza la evaluación separada de afinidad, intención, capacidad y calificación.
+
 ## Salidas obligatorias
 
 - relevancia;
