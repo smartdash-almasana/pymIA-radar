@@ -17,3 +17,6 @@ relaticle-main/
 
 # Datos de ejecución generados
 data/last30days-runs/
+
+# Base de datos local de prueba
+data/radar-local.db
