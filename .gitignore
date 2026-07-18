@@ -20,3 +20,6 @@ data/last30days-runs/
 
 # Base de datos local de prueba
 data/radar-local.db
+
+# Reportes de calibración generados
+data/calibration/
