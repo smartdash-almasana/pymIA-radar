@@ -72,7 +72,11 @@ def test_calibration_report_marks_ready_when_thresholds_pass() -> None:
         ),
     }
 
-    report = run_semantic_calibration(labels, runner=predictions.__getitem__)
+    report = run_semantic_calibration(
+        labels,
+        runner=predictions.__getitem__,
+        corpus_human_validated=True,
+    )
 
     assert report.case_count == 2
     assert report.action_accuracy == 1
