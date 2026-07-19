@@ -1,3 +1,4 @@
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -9,7 +10,10 @@ class Settings(BaseSettings):
     semantic_llm_enabled: bool = False
     semantic_llm_provider: str = "default"
     semantic_llm_base_url: str | None = None
-    semantic_llm_api_key: str | None = None
+    semantic_llm_api_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("SEMANTIC_LLM_API_KEY", "AGNES_API_KEY"),
+    )
     semantic_llm_model: str | None = None
     relaticle_base_url: str = "http://relaticle:8080"
     relaticle_api_token: str | None = None

@@ -14,11 +14,22 @@ class DeclaredCapacity(StrEnum):
 
 class DecisionStage(StrEnum):
     DISCOVERY = "DESCUBRIMIENTO"
-    EXPLORATION = "EXPLORACIÓN"
-    COMPARISON = "COMPARACIÓN"
-    ACTIVE_EVALUATION = "EVALUACIÓN_ACTIVA"
+    EXPLORATION = "EXPLORACION"
+    COMPARISON = "COMPARACION"
+    ACTIVE_EVALUATION = "EVALUACION_ACTIVA"
     READY_TO_TALK = "LISTO_PARA_CONVERSAR"
     READY_TO_QUALIFY = "LISTO_PARA_PRECALIFICAR"
+
+    @classmethod
+    def _missing_(cls, value: object) -> "DecisionStage | None":
+        if not isinstance(value, str):
+            return None
+        legacy_aliases = {
+            "EXPLORACIÓN": cls.EXPLORATION,
+            "COMPARACIÓN": cls.COMPARISON,
+            "EVALUACIÓN_ACTIVA": cls.ACTIVE_EVALUATION,
+        }
+        return legacy_aliases.get(value)
 
 
 class FalsePositiveRisk(StrEnum):

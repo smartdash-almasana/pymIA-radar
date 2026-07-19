@@ -5,7 +5,10 @@ from fastapi.testclient import TestClient
 from app.main import app
 
 
-def test_local_conversation_flow_persists_deduplicates_assesses_and_reviews() -> None:
+def test_local_conversation_flow_persists_deduplicates_assesses_and_reviews(monkeypatch) -> None:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "semantic_llm_enabled", False)
     external_id = f"test-{uuid4()}"
     payload = {
         "source": "test_source",

@@ -99,36 +99,164 @@ def build_pydantic_ai_runner(
     base_url: str | None = None,
     api_key: str | None = None,
 ) -> DraftRunner:
-    """Build a lazy Pydantic AI runner for native or OpenAI-compatible models."""
-    try:
-        from pydantic_ai import Agent
-    except ImportError as exc:  # pragma: no cover - depends on optional package
-        raise RuntimeError(
-            "Pydantic AI is not installed; install the project with the 'ai' extra"
-        ) from exc
-
+    """Build a lazy semantic runner without broadening provider-specific workarounds."""
     normalized_provider = provider_name.strip().lower()
-    model: object = model_name
-    if normalized_provider in {"deepseek", "openai_compatible", "ollama"}:
+
+    if normalized_provider in {"deepseek", "openai_compatible", "ollama", "agnes"}:
         if not base_url:
             raise ValueError(f"{normalized_provider} requires SEMANTIC_LLM_BASE_URL")
         if normalized_provider != "ollama" and not api_key:
             raise ValueError(f"{normalized_provider} requires SEMANTIC_LLM_API_KEY")
-        try:
-            from pydantic_ai.models.openai import OpenAIChatModel
-            from pydantic_ai.providers.openai import OpenAIProvider
-        except ImportError as exc:  # pragma: no cover - optional provider extra
-            raise RuntimeError("Pydantic AI OpenAI provider is not installed") from exc
-        provider = OpenAIProvider(
-            base_url=base_url,
-            api_key=api_key or "ollama",
+
+        is_agnes = normalized_provider == "agnes" or _is_agnes_base_url(base_url)
+        if is_agnes:
+            return _build_http_json_runner(model_name, base_url, api_key or "")
+        return _build_openai_compatible_structured_runner(
+            model_name,
+            base_url,
+            api_key or "ollama",
         )
-        model = OpenAIChatModel(model_name, provider=provider)
-    elif normalized_provider != "default":
+
+    if normalized_provider != "default":
         raise ValueError(f"Unsupported semantic LLM provider: {provider_name}")
 
+    return _build_pydantic_structured_runner(model_name)
+
+
+def _is_agnes_base_url(base_url: str) -> bool:
+    """Return true only for Agnes' exact host or real subdomains."""
+    from urllib.parse import urlparse
+
+    try:
+        hostname = urlparse(base_url).hostname or ""
+    except ValueError:
+        return False
+    hostname = hostname.lower().rstrip(".")
+    return hostname == "agnes-ai.com" or hostname.endswith(".agnes-ai.com")
+
+
+def _build_http_json_runner(
+    model_name: str,
+    base_url: str,
+    api_key: str,
+) -> DraftRunner:
+    """Direct HTTP runner — sends a system prompt asking for JSON, parses manually.
+
+    Avoids pydantic-ai's tool-calling path, which many providers don't support correctly.
+    """
+    import httpx
+
+    schema_description = (
+        '{\n'
+        '  "thematic_affinity": int 0-100 (qué tanto se alinea con regeneración, '
+        'permacultura, soberanía, propósito colectivo),\n'
+        '  "values_affinity": int 0-100 (qué tanto resuena con valores como comunidad, '
+        'largo plazo, ética, arraigo),\n'
+        '  "intent_score": int 0-100 (qué tan concreta es la intención de acción),\n'
+        '  "declared_capacity": "NO_CONOCIDA" | "BAJA_DECLARADA" | "MEDIA_DECLARADA" | '
+        '"ALTA_DECLARADA" (usá NO_CONOCIDA salvo que haya declaración explícita de '
+        'capacidad económica o patrimonial),\n'
+        '  "decision_stage": "DESCUBRIMIENTO" | "EXPLORACION" | "COMPARACION" | '
+        '"EVALUACION_ACTIVA" | "LISTO_PARA_CONVERSAR" | "LISTO_PARA_PRECALIFICAR",\n'
+        '  "evidence_quality": int 0-100 (calidad de las citas textuales disponibles),\n'
+        '  "false_positive_risk": "BAJO" | "MEDIO" | "ALTO",\n'
+        '  "probable_archetype": "PIONERO_VISIONARIO" | "SEMBRADOR_PACIENTE" | '
+        '"ARTIFICE_REGENERATIVO" | null,\n'
+        '  "archetype_confidence": int 0-100 | null,\n'
+        '  "archetype_evidence": [string],\n'
+        '  "positive_signals": [string] (señales de alineación con Inlak\'ech),\n'
+        '  "negative_signals": [string] (señales de desalineación),\n'
+        '  "objections": [string] (objeciones o dudas explícitas),\n'
+        '  "missing_information": [string] (qué falta para decidir),\n'
+        '  "evidence_fragments": [string] (citas textuales literales del texto original)\n'
+        '}'
+    )
+
+    system_prompt = (
+        "Analizá la conversación para RADAR de Inlak'ech. "
+        "Devolvé ÚNICAMENTE un objeto JSON válido (sin texto adicional, sin markdown) "
+        "con esta estructura exacta:\n\n"
+        f"{schema_description}\n\n"
+        "Reglas:\n"
+        "- NO infieras capacidad económica. Usá NO_CONOCIDA.\n"
+        "- Diferenciá deseos hipotéticos de decisión activa.\n"
+        "- Citá solo fragmentos literales presentes en el texto.\n"
+        "- El resultado es provisional y será revisado por humanos."
+    )
+
+    def run(text: str) -> LLMAssessmentDraft:
+        try:
+            resp = httpx.post(
+                f"{base_url.rstrip('/')}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": model_name,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": text},
+                    ],
+                    "temperature": 0.1,
+                    "max_tokens": 2048,
+                },
+                timeout=30,
+            )
+        except httpx.TimeoutException as exc:
+            raise RuntimeError("Agnes request timed out") from exc
+        except httpx.RequestError as exc:
+            raise RuntimeError("Agnes request failed") from exc
+
+        if resp.status_code < 200 or resp.status_code >= 300:
+            raise RuntimeError(f"Agnes HTTP error: {resp.status_code}")
+
+        try:
+            body = resp.json()
+        except ValueError as exc:
+            raise RuntimeError("Agnes returned invalid JSON envelope") from exc
+
+        try:
+            raw = body["choices"][0]["message"]["content"]
+        except (KeyError, IndexError, TypeError) as exc:
+            raise RuntimeError("Agnes returned an invalid response envelope") from exc
+
+        if not isinstance(raw, str) or not raw.strip():
+            raise RuntimeError("Agnes returned an empty assessment")
+
+        return LLMAssessmentDraft.model_validate_json(raw)
+
+    return run
+
+
+def _build_openai_compatible_structured_runner(
+    model_name: str,
+    base_url: str,
+    api_key: str,
+) -> DraftRunner:
+    """Pydantic AI runner for compatible providers with working structured output."""
+    try:
+        from pydantic_ai.models.openai import OpenAIChatModel
+        from pydantic_ai.providers.openai import OpenAIProvider
+    except ImportError as exc:
+        raise RuntimeError("Pydantic AI OpenAI provider is not installed") from exc
+
+    provider = OpenAIProvider(base_url=base_url, api_key=api_key)
+    model = OpenAIChatModel(model_name, provider=provider)
+    return _build_pydantic_structured_runner(model)
+
+
+def _build_pydantic_structured_runner(model_name: object) -> DraftRunner:
+    """Pydantic AI structured-output runner for providers with proper tool-calling support."""
+    try:
+        from pydantic_ai import Agent
+    except ImportError as exc:
+        raise RuntimeError(
+            "Pydantic AI is not installed; install the project with the 'ai' extra"
+        ) from exc
+
     agent = Agent(
-        model,
+        model_name,
         output_type=LLMAssessmentDraft,
         instructions=(
             "Analizá la conversación para RADAR de Inlak'ech. Separá afinidad temática, "

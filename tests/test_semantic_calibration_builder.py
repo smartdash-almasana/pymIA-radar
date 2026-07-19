@@ -14,7 +14,7 @@ def test_builder_creates_draft_machine_seeded_cases() -> None:
     assessment = SimpleNamespace(
         probable_archetype="SEMBRADOR_PACIENTE",
         recommended_action="REVISAR_O_MADURAR",
-        decision_stage="EXPLORACIÓN",
+        decision_stage="EXPLORACION",
         thematic_affinity=78,
         values_affinity=72,
         intent_score=45,
