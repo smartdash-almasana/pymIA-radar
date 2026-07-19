@@ -85,6 +85,41 @@ def test_short_contextless_mention_is_insufficient() -> None:
     assert "context" in assessment.missing_fields
 
 
+def test_identical_fields_are_normalized_and_counted_once() -> None:
+    duplicate = "  Conversación social extensa sin intención comercial.  " * 3
+    result = DiscoveryResult(
+        source="reddit",
+        external_id="quality-duplicate",
+        conversation_url="https://example.com/quality-duplicate",
+        title=duplicate,
+        text=duplicate.replace("  ", " "),
+        context=duplicate,
+    )
+
+    assessment = assess_conversation_quality(result)
+
+    assert assessment.score == 2
+    assert assessment.status == "review"
+    assert "extended_content" not in assessment.positive_signals
+
+
+def test_irrelevant_duplicate_content_cannot_become_substantive_from_length() -> None:
+    social_comment = "Una charla social sin decisión, inversión ni intención comercial. " * 3
+    result = DiscoveryResult(
+        source="reddit",
+        external_id="quality-irrelevant",
+        conversation_url="https://example.com/quality-irrelevant",
+        title=social_comment,
+        text=social_comment,
+        context=social_comment,
+    )
+
+    assessment = assess_conversation_quality(result)
+
+    assert assessment.status != "substantive"
+    assert assessment.score == 2
+
+
 def test_search_catalog_v2_loads_with_broader_queries() -> None:
     catalog = load_search_query_catalog(Path("config/search_queries.v2.json"))
     assert catalog.schema_version == "radar-search-queries/v2"

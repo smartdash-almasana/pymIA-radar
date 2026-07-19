@@ -34,6 +34,7 @@ Consultas más cortas, sin comillas exactas y organizadas por tema y geografía 
 - no mezclar más de tres conceptos principales por consulta;
 - no evaluar afinidad ni intención en esta especificación;
 - conservar resultados reales, fuente, consulta y trazabilidad;
+- el corpus experimental no autoriza persistencia operativa en `Conversation` ni alimentación de la bandeja humana;
 - ejecutar sin `--quick` como configuración base;
 - comparar rendimiento contra v1;
 - no alterar ni reemplazar el catálogo v1.
@@ -49,7 +50,6 @@ python scripts/run_search_corpus.py `
   --catalog config/search_queries.v2.json `
   --runs-root data/last30days-runs/corpus-v2 `
   --report data/last30days-runs/corpus-v2/report.json `
-  --persist `
   --no-quick
 ```
 
@@ -59,7 +59,7 @@ python scripts/run_search_corpus.py `
 2. Las consultas no contienen frases exactas entre comillas.
 3. Ejecución real de las 20 consultas sin fallos ocultos.
 4. Informe consolidado con `KEEP`, `REFINE` o `REJECT`.
-5. Persistencia idempotente.
+5. La ejecución experimental no abre ni modifica la base operativa.
 6. Comparación explícita con las 4 conversaciones recuperadas por v1.
 7. Documentación de cobertura por fuente.
 8. Suite completa aprobada.
@@ -69,3 +69,7 @@ python scripts/run_search_corpus.py `
 Pasa a `VERIFIED` cuando exista evidencia real reproducible de las 20 ejecuciones, un informe comparativo v1/v2 y una decisión documentada sobre qué consultas integrarán el repertorio operativo siguiente.
 
 Mientras este gate permanezca abierto, no debe iniciarse la ejecución de `SPEC-001C`, la calibración semántica ni el piloto.
+
+## Evidencia de refinamiento
+
+- `Q111 — vivir en Yucatán comunidad`: `REFINE`. El término “comunidad” es ambiguo y recuperó conversación social no relacionada con Inlak'ech; requiere evaluación experimental antes de cualquier uso operativo.

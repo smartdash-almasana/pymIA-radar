@@ -38,8 +38,19 @@ def _matches(text: str, patterns: tuple[str, ...]) -> bool:
     return any(re.search(pattern, text, flags=re.IGNORECASE) for pattern in patterns)
 
 
+def _distinct_normalized_parts(*parts: str | None) -> list[str]:
+    normalized_parts: list[str] = []
+    seen: set[str] = set()
+    for part in parts:
+        normalized = re.sub(r"\s+", " ", part or "").strip()
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            normalized_parts.append(normalized)
+    return normalized_parts
+
+
 def assess_conversation_quality(result: DiscoveryResult) -> ConversationQualityAssessment:
-    text = " ".join(part for part in (result.title, result.text, result.context) if part).strip()
+    text = " ".join(_distinct_normalized_parts(result.title, result.text, result.context))
     score = 0
     positive: list[str] = []
     negative: list[str] = []

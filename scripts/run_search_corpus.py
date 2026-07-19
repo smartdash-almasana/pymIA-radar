@@ -4,7 +4,6 @@ import argparse
 import json
 from pathlib import Path
 
-from app.db.session import SessionLocal, init_db
 from app.discovery.corpus_runner import run_catalog_evaluation
 from app.discovery.last30days_adapter import Last30DaysAdapter
 from app.discovery.search_policy import load_search_query_catalog
@@ -20,7 +19,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--sources", default="reddit,hackernews,github,polymarket")
     parser.add_argument("--timeout", type=int, default=300)
     parser.add_argument("--no-quick", action="store_true")
-    parser.add_argument("--persist", action="store_true")
     return parser
 
 
@@ -34,22 +32,13 @@ def main() -> int:
     )
     sources = [item.strip() for item in args.sources.split(",") if item.strip()]
 
-    db = None
-    try:
-        if args.persist:
-            init_db()
-            db = SessionLocal()
-        report = run_catalog_evaluation(
-            catalog,
-            adapter=adapter,
-            runs_root=args.runs_root,
-            db=db,
-            search_sources=sources,
-            quick=not args.no_quick,
-        )
-    finally:
-        if db is not None:
-            db.close()
+    report = run_catalog_evaluation(
+        catalog,
+        adapter=adapter,
+        runs_root=args.runs_root,
+        search_sources=sources,
+        quick=not args.no_quick,
+    )
 
     report_path = Path(args.report)
     report_path.parent.mkdir(parents=True, exist_ok=True)

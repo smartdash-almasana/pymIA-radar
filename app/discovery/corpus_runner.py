@@ -5,14 +5,9 @@ from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
-
 from app.discovery.conversation_quality import assess_conversation_quality
-from app.discovery.ingestion import persist_discovery_results
 from app.discovery.last30days_adapter import Last30DaysAdapter, Last30DaysAdapterError
 from app.discovery.search_policy import SearchQuery, SearchQueryCatalog
-from app.models.conversation import Conversation
 
 
 class QueryEvaluation(BaseModel):
@@ -26,8 +21,6 @@ class QueryEvaluation(BaseModel):
     insufficient: int = 0
     substantive_rate: float = Field(ge=0, le=1)
     sources: dict[str, int] = Field(default_factory=dict)
-    created_count: int = 0
-    persisted_count: int = 0
     recommendation: Literal["KEEP", "REFINE", "REJECT", "ERROR"]
     error: str | None = None
 
@@ -61,7 +54,6 @@ def evaluate_query(
     *,
     adapter: Last30DaysAdapter,
     runs_root: str | Path,
-    db: Session | None = None,
     search_sources: list[str] | None = None,
     quick: bool = True,
 ) -> QueryEvaluation:
@@ -93,15 +85,6 @@ def evaluate_query(
         counts[assessment.status] += 1
         source_counts[result.source] += 1
 
-    persisted_count = 0
-    created_count = 0
-    if db is not None:
-        before_count = db.scalar(select(func.count()).select_from(Conversation)) or 0
-        persisted = persist_discovery_results(db, search_result.conversations)
-        after_count = db.scalar(select(func.count()).select_from(Conversation)) or 0
-        persisted_count = len(persisted)
-        created_count = max(0, after_count - before_count)
-
     total = len(search_result.conversations)
     substantive = counts["substantive"]
     review = counts["review"]
@@ -118,8 +101,6 @@ def evaluate_query(
         insufficient=insufficient,
         substantive_rate=(substantive / total) if total else 0,
         sources=dict(sorted(source_counts.items())),
-        created_count=created_count,
-        persisted_count=persisted_count,
         recommendation=_recommendation(total, substantive, review),
     )
 
@@ -129,7 +110,6 @@ def run_catalog_evaluation(
     *,
     adapter: Last30DaysAdapter,
     runs_root: str | Path,
-    db: Session | None = None,
     search_sources: list[str] | None = None,
     quick: bool = True,
 ) -> CorpusEvaluationReport:
@@ -138,7 +118,6 @@ def run_catalog_evaluation(
             query,
             adapter=adapter,
             runs_root=runs_root,
-            db=db,
             search_sources=search_sources,
             quick=quick,
         )
