@@ -1,10 +1,12 @@
 # SPEC-001B — Repertorio de búsqueda v2
 
-**Estado:** IMPLEMENTING
+**Estado:** IMPLEMENTING — ACTIVE
 
 ## Propósito
 
 Ampliar la recuperación de conversaciones públicas reales para Inlak'ech mediante consultas menos rígidas que las usadas en el repertorio v1.
+
+Esta es la única especificación activa en el corte documentado por `docs/CURRENT_ENGINEERING_STATE.md`.
 
 ## Hallazgo de partida
 
@@ -65,3 +67,5 @@ python scripts/run_search_corpus.py `
 ## Gate de cierre
 
 Pasa a `VERIFIED` cuando exista evidencia real reproducible de las 20 ejecuciones, un informe comparativo v1/v2 y una decisión documentada sobre qué consultas integrarán el repertorio operativo siguiente.
+
+Mientras este gate permanezca abierto, no debe iniciarse la ejecución de `SPEC-001C`, la calibración semántica ni el piloto.

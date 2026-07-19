@@ -1,6 +1,6 @@
 # SPEC-003 — Bandeja de revisión humana
 
-**Estado:** IMPLEMENTING
+**Estado:** IMPLEMENTING — REAL USE PENDING AFTER SPEC-001B
 
 ## Propósito
 
@@ -39,12 +39,14 @@ Permitir que una persona decida qué candidatos avanzan.
 - historial persistente de revisiones;
 - registro persistente de contacto, respuesta, ausencia de respuesta y no contactar;
 - transición explícita de estados comerciales;
+- bandeja web local con conversación, evaluación, evidencia, decisión, contacto, respuesta, precalificación e historial;
+- edición del mensaje desde interfaz;
+- filtros locales por estado y búsqueda textual;
 - pruebas de bloqueo sin aprobación y trazabilidad completa.
 
 ## Pendiente para cierre
 
-- interfaz web de bandeja;
-- filtros y paginación;
-- visualización conjunta de evaluación, evidencia, revisiones y eventos;
-- edición desde interfaz;
-- pruebas de uso con diez conversaciones reales.
+- paginación para volúmenes mayores;
+- prueba de uso reproducible con diez conversaciones públicas reales;
+- evidencia de decisiones humanas persistidas después de reiniciar;
+- validación de legibilidad y operación por la persona responsable comercial.

@@ -1,6 +1,6 @@
 # SPEC-001C — Plan de ejecución por fuente
 
-**Estado:** IMPLEMENTING
+**Estado:** IMPLEMENTING — QUEUED AFTER SPEC-001B
 
 ## Propósito
 
@@ -71,6 +71,10 @@ El primer lote real debe incluir:
 - cobertura territorial;
 - costo operativo por fuente;
 - restricciones o fallos de acceso.
+
+## Dependencia de avance
+
+Esta especificación queda en cola hasta cerrar `SPEC-001B`. Los planes existentes son contratos de configuración; todavía no constituyen un ejecutor operativo por fuente.
 
 ## Gate de cierre
 

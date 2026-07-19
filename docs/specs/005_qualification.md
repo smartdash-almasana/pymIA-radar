@@ -1,6 +1,6 @@
 # SPEC-005 — Precalificación
 
-**Estado:** APPROVED
+**Estado:** IMPLEMENTING — REAL USE PENDING AFTER SPEC-001B
 
 ## Propósito
 
@@ -157,12 +157,19 @@ Una persona puede mostrar ajuste verde, pero sin consentimiento explícito:
 - no inventar el camino Sembrador cuando el mini-formulario no lo determina;
 - toda recomendación de camino debe conservar las respuestas que la originaron.
 
-## Criterios de aceptación
+## Implementado en este corte
 
 - contrato Pydantic validado;
-- semáforo reproducible;
-- pruebas para rojo, amarillo y verde;
-- Artífice exige anclaje documentado;
+- semáforo determinístico rojo, amarillo y verde;
+- Artífice con anclaje documentado;
 - consentimiento separado del ajuste comercial;
-- paquete CRM solo para `CALIFICADO` o `PRIORITARIO`;
+- persistencia del resultado de precalificación;
+- paquete CRM local permitido solo para `CALIFICADO` o `PRIORITARIO` con consentimiento;
 - integración externa bloqueada hasta auditar Relaticle.
+
+## Criterios de aceptación pendientes
+
+- aplicar las reglas a respuestas reales obtenidas después de un acercamiento aprobado;
+- confirmar que la persona responsable puede revisar y corregir la recomendación de camino;
+- demostrar persistencia y recuperación del resultado en un caso real;
+- auditar Relaticle antes de cualquier transferencia externa.

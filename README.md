@@ -66,20 +66,34 @@ docker compose up --build
 
 ## Estado del repositorio
 
-Este ZIP contiene el esqueleto funcional del proyecto:
+Checkpoint vigente:
 
-- API FastAPI
-- PostgreSQL
-- modelos iniciales
-- configuración narrativa de Inlak'ech
-- endpoint de clasificación preliminar
-- endpoint de revisión
-- cliente inicial para Relaticle
-- adaptador inicial para last30days-skill
-- cuestionario de precalificación
-- pruebas básicas
+```text
+docs/CURRENT_ENGINEERING_STATE.md
+```
 
-Todavía deben conectarse las credenciales reales, auditarse los repositorios externos y calibrarse el motor semántico con los documentos maestros completos.
+Capacidades con evidencia técnica:
+
+- integración real con `last30days-skill` mediante JSON agent v1.2;
+- normalización, persistencia y deduplicación;
+- API FastAPI y bandeja local de revisión;
+- evaluación determinística y semántica estructurada;
+- integración Agnes endurecida con fallback auditable;
+- revisión humana obligatoria antes de registrar contacto;
+- registro de respuesta y precalificación determinística;
+- frontera bloqueada para Relaticle hasta auditar su contrato real.
+
+Capacidades todavía no verificadas como producto real:
+
+- repertorio de búsqueda v2 ejecutado y comparado;
+- escaneo operativo por fuentes concretas;
+- corpus humano suficiente para calibración;
+- precisión semántica medida sobre casos reales;
+- revisión, acercamiento, respuesta y precalificación con personas reales;
+- transferencia real a Relaticle;
+- piloto extremo a extremo.
+
+La única especificación activa en este corte es `SPEC-001B — Repertorio de búsqueda v2`. El resto queda verificado, en cola, bloqueado o pendiente de uso real según `docs/CURRENT_ENGINEERING_STATE.md`.
 
 ## Método de desarrollo
 

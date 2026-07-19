@@ -1,10 +1,12 @@
 # SPEC-006 — Piloto integral
 
-**Estado:** DRAFT
+**Estado:** DRAFT — BLOCKED BY SPEC-001B AND PREVIOUS GATES
 
 ## Propósito
 
 Demostrar el circuito completo con conversaciones reales.
+
+Esta especificación no puede implementarse mientras permanezcan abiertos los gates de descubrimiento operativo, corpus humano, revisión real y Relaticle auditado.
 
 ## Flujo
 

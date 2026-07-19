@@ -1,6 +1,6 @@
 # SPEC-002 — Afinidad e intención
 
-**Estado:** APPROVED
+**Estado:** IMPLEMENTING — BLOCKED BY HUMAN CORPUS AND SPEC-001B
 
 ## Propósito
 
@@ -41,10 +41,19 @@ La salida debe cumplir `docs/RADAR_COMMERCIAL_CONVERSION_CONTRACT.md`.
 - casos ambiguos deben pasar a revisión;
 - señales espirituales sin intención no equivalen a lead.
 
-## Criterios de aceptación
+## Implementado en este corte
 
-- corpus mínimo de 100 conversaciones;
-- positivos, negativos y ambiguos;
+- salida estructurada validada con Pydantic;
+- evaluación determinística de prioridad y acción;
+- integración semántica opcional con proveedor remoto;
+- persistencia de evaluaciones y metadatos del motor;
+- corpus exportable en estado `DRAFT`;
+- calibración bloqueada cuando no existe validación humana.
+
+## Criterios de aceptación pendientes
+
+- corpus mínimo de 100 conversaciones públicas válidas;
+- positivos, negativos y ambiguos etiquetados humanamente;
 - falsos positivos documentados;
-- salida JSON validada;
-- precisión objetivo definida antes del piloto.
+- precisión medida sobre corpus humano independiente;
+- precisión objetivo definida y satisfecha antes del piloto.
