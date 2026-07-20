@@ -1,7 +1,11 @@
 # Contrato de Lista 1 — Candidatos por Afinidad Semántica Presuntiva
 
 **Versión:** `1.0.0`
-**Estado:** `DRAFT`
+**Estado:** `APPROVED`
+**Aprobado para implementación:** Sí  
+**Fecha de aprobación:** 20 de julio de 2026  
+**Alcance autorizado:** Lista 1 — candidatos por afinidad semántica presuntiva  
+**Fases no autorizadas:** corroboración, mensajería, consentimiento, embudo clasificatorio, CRM y Relaticle
 **Documento rector:** `docs/RADAR_MASTER_ARCHITECTURE_AND_DEVELOPMENT_DIRECTION.md`
 **Contrato técnico de referencia:** `app.schemas.assessment_v3.ConversationAssessmentV3Result`
 **Modelo existente de evaluación:** `app.models.assessment_v3.ConversationAssessmentV3`
