@@ -534,3 +534,14 @@ dd { margin: 0; font-weight: 700; }
 .lane-baja { background: linear-gradient(180deg, rgba(241,217,211,.65), rgba(255,253,248,.95)); }
 @media (max-width: 1240px) { .signal-board { grid-template-columns: repeat(2, minmax(220px, 1fr)); } }
 @media (max-width: 760px) { .signal-board { grid-template-columns: 1fr; } .signal-lane { min-height: auto; } }
+
+.candidate-table-wrap { overflow-x: auto; }
+.candidate-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.candidate-table th, .candidate-table td { border-bottom: 1px solid rgba(255,255,255,0.12); padding: 0.8rem; text-align: left; vertical-align: top; }
+.candidate-table th { color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.table-actions { display: grid; gap: 0.35rem; min-width: 10rem; }
+.table-actions a, .table-actions button { color: inherit; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; padding: 0.35rem 0.6rem; text-decoration: none; cursor: pointer; font: inherit; }
+.candidate-status { display: inline-flex; border-radius: 999px; border: 1px solid rgba(255,255,255,0.18); padding: 0.3rem 0.55rem; font-size: 0.78rem; font-weight: 700; }
+.candidate-status.interpretation_pending { background: rgba(245, 158, 11, 0.18); }
+.candidate-status.observed { background: rgba(59, 130, 246, 0.16); }
+.candidate-status.discarded { background: rgba(239, 68, 68, 0.16); }

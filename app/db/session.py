@@ -14,8 +14,11 @@ def init_db() -> None:
         assessment_v2,
         assessment_v3,
         conversation,
+        conversation_participant,
         discovery,
         engagement,
+        presumptive_candidate,
+        public_actor,
         qualification,
         review,
     )

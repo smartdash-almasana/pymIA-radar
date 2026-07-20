@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse, PlainTextResponse
 
 from app.api.routes import router
 from app.htmx_ui import router as htmx_router
+from app.presumptive_candidate_ui import router as presumptive_candidate_router
 from app.db.session import init_db
 
 
@@ -34,6 +35,7 @@ app = FastAPI(
 
 app.include_router(router)
 app.include_router(htmx_router)
+app.include_router(presumptive_candidate_router)
 
 
 @app.get("/lab", response_class=HTMLResponse)

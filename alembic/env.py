@@ -7,7 +7,7 @@ from sqlalchemy import engine_from_config, pool
 
 from app.core.config import settings
 from app.db.session import Base
-from app.models import assessment, assessment_v2, assessment_v3, conversation, engagement, qualification, review  # noqa: F401
+from app.models import assessment, assessment_v2, assessment_v3, conversation, conversation_participant, engagement, presumptive_candidate, public_actor, qualification, review  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:
