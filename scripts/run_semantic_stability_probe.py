@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
@@ -28,15 +27,18 @@ def main() -> int:
     args = parser().parse_args()
     root = Path(__file__).resolve().parents[1]
     database = (root / args.database).resolve()
-    os.environ["DATABASE_URL"] = f"sqlite+pysqlite:///{database.as_posix()}"
+    database_url = f"sqlite+pysqlite:///{database.as_posix()}"
 
-    from sqlalchemy import desc, func, select
+    from sqlalchemy import create_engine, desc, func, select
+    from sqlalchemy.orm import sessionmaker
     from app.core.config import settings
-    from app.db.session import SessionLocal
     from app.models.assessment_v3 import ConversationAssessmentV3
     from app.models.conversation import Conversation
     from app.models.discovery import DiscoveryCandidate
     from app.semantics.conversation_assessment_v3 import assess_conversation_v3
+
+    engine = create_engine(database_url, future=True)
+    SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
     ids = [int(item) for item in args.ids.split(",") if item.strip()]
     with SessionLocal() as db:
@@ -122,6 +124,7 @@ def main() -> int:
 
         after = db.scalar(select(func.count()).select_from(DiscoveryCandidate)) or 0
 
+    engine.dispose()
     total = len(rows) * args.runs
     completed = sum(run["status"] == "COMPLETED" for row in rows for run in row["runs"])
     stable = sum(row["action_stable"] for row in rows)
