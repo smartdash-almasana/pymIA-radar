@@ -1,0 +1,83 @@
+{
+  "schema_version": "radar-conversation-calibration-corpus/v2",
+  "status": "DRAFT",
+  "reviewed_by": null,
+  "review_notes": "Corpus inicial V2. Requiere revisión humana independiente.",
+  "cases": [
+    {
+      "case_id": "V2-NEG-FOOTBALL",
+      "text": "No hay rivalidad entre Argentina y Portugal, solo entre Messi y Cristiano.",
+      "expected_real_topic": "Rivalidad futbolística",
+      "expected_contextual_meaning": "Intercambio social sobre jugadores de fútbol.",
+      "expected_apparent_affinity": "NONE",
+      "expected_affinity_domains": [],
+      "expected_apparent_intention": "NONE",
+      "expected_false_positive_risk": "HIGH",
+      "expected_review_action": "OBSERVE",
+      "required_evidence_fragments": ["No hay rivalidad entre Argentina y Portugal, solo entre Messi y Cristiano."],
+      "forbidden_inferences": ["probable_archetype", "declared_capacity", "participation_path"],
+      "label_provenance": "DRAFT_REQUIRES_HUMAN_REVIEW",
+      "reviewed_by": null
+    },
+    {
+      "case_id": "V2-NEG-SPECULATION",
+      "text": "Quiero invertir en Yucatán, pero solo busco una salida especulativa inmediata.",
+      "expected_real_topic": "Inversión especulativa de corto plazo",
+      "expected_contextual_meaning": "La cercanía territorial no compensa la incompatibilidad con el largo plazo de Inlak'ech.",
+      "expected_apparent_affinity": "NONE",
+      "expected_affinity_domains": ["MEXICO_YUCATAN_CONNECTION"],
+      "expected_apparent_intention": "ACTION_ORIENTED",
+      "expected_false_positive_risk": "MEDIUM",
+      "expected_review_action": "DISCARD",
+      "required_evidence_fragments": ["solo busco una salida especulativa inmediata"],
+      "forbidden_inferences": ["probable_archetype", "declared_capacity"],
+      "label_provenance": "DRAFT_REQUIRES_HUMAN_REVIEW",
+      "reviewed_by": null
+    },
+    {
+      "case_id": "V2-SYMPATHY",
+      "text": "Me gustan los proyectos regenerativos, aunque no estoy buscando participar en ninguno.",
+      "expected_real_topic": "Valoración temática sin participación",
+      "expected_contextual_meaning": "Expresa simpatía, pero niega voluntad de actuar.",
+      "expected_apparent_affinity": "POSSIBLE",
+      "expected_affinity_domains": ["REGENERATION"],
+      "expected_apparent_intention": "THEMATIC_SYMPATHY",
+      "expected_false_positive_risk": "MEDIUM",
+      "expected_review_action": "OBSERVE",
+      "required_evidence_fragments": ["no estoy buscando participar en ninguno"],
+      "forbidden_inferences": ["probable_archetype", "declared_capacity"],
+      "label_provenance": "DRAFT_REQUIRES_HUMAN_REVIEW",
+      "reviewed_by": null
+    },
+    {
+      "case_id": "V2-EXPLORATION",
+      "text": "Busco una comunidad regenerativa en Yucatán y quiero conocer cómo se participa.",
+      "expected_real_topic": "Exploración de participación comunitaria regenerativa",
+      "expected_contextual_meaning": "La persona solicita información concreta sobre participación.",
+      "expected_apparent_affinity": "CLEAR",
+      "expected_affinity_domains": ["COMMUNITY", "REGENERATION", "ACTIVE_PARTICIPATION", "MEXICO_YUCATAN_CONNECTION"],
+      "expected_apparent_intention": "EXPLORATION",
+      "expected_false_positive_risk": "LOW",
+      "expected_review_action": "REVIEW",
+      "required_evidence_fragments": ["Busco una comunidad regenerativa en Yucatán", "quiero conocer cómo se participa"],
+      "forbidden_inferences": ["probable_archetype", "declared_capacity"],
+      "label_provenance": "DRAFT_REQUIRES_HUMAN_REVIEW",
+      "reviewed_by": null
+    },
+    {
+      "case_id": "V2-ACTION",
+      "text": "Quiero participar en un proyecto de largo plazo y puedo conversar esta semana para conocer Inlak'ech.",
+      "expected_real_topic": "Voluntad explícita de conocer y participar",
+      "expected_contextual_meaning": "Expresa una acción concreta de acercamiento.",
+      "expected_apparent_affinity": "CLEAR",
+      "expected_affinity_domains": ["ACTIVE_PARTICIPATION", "LONG_TERM"],
+      "expected_apparent_intention": "ACTION_ORIENTED",
+      "expected_false_positive_risk": "LOW",
+      "expected_review_action": "REVIEW",
+      "required_evidence_fragments": ["Quiero participar en un proyecto de largo plazo", "puedo conversar esta semana"],
+      "forbidden_inferences": ["probable_archetype", "declared_capacity"],
+      "label_provenance": "DRAFT_REQUIRES_HUMAN_REVIEW",
+      "reviewed_by": null
+    }
+  ]
+}

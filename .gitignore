@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 .venv/
 .env
+*.env.local
 dist/
 build/
 *.egg-info/
@@ -10,16 +11,15 @@ build/
 .idea/
 .vscode/
 postgres-data/
+lab/.cache/
+lab/*.tmp
+lab/*.partial
+lab/*.partial.md
+lab/*secret*
 
-# Repositorios externos locales
-last30days-skill-main/
-relaticle-main/
-
-# Datos de ejecución generados
-data/last30days-runs/
-
-# Base de datos local de prueba
+# local data artifacts
 data/radar-local.db
-
-# Reportes de calibración generados
+data/last30days-runs/
+data/semantic-stability/
+data/run-live-probe.txt
 data/calibration/
