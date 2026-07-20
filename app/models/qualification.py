@@ -13,6 +13,12 @@ class QualificationRecord(Base):
     conversation_id: Mapped[int] = mapped_column(
         ForeignKey("conversations.id"), index=True
     )
+    discovery_candidate_id: Mapped[int | None] = mapped_column(
+        ForeignKey("discovery_candidates.id"), nullable=True, index=True
+    )
+    discovery_outcome_id: Mapped[int | None] = mapped_column(
+        ForeignKey("discovery_outcomes.id"), nullable=True, index=True
+    )
     input_payload: Mapped[dict] = mapped_column(JSON)
     traffic_light: Mapped[str] = mapped_column(String(20), index=True)
     status: Mapped[str] = mapped_column(String(50), index=True)

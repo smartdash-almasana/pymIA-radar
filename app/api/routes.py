@@ -1,20 +1,48 @@
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.assessment_v2 import SemanticAssessmentV2
+from app.models.assessment_v3 import ConversationAssessmentV3
 from app.models.conversation import Conversation
+from app.models.discovery import DiscoveryCandidate, DiscoveryOutcome
 from app.models.engagement import EngagementEvent
 from app.models.qualification import QualificationRecord
 from app.models.review import ReviewDecision
+from app.discovery_service import (
+    DiscoveryPreconditionError,
+    move_candidate,
+    require_prequalification_eligibility,
+    upsert_outcome,
+)
+from app.discovery.last30days_adapter import Last30DaysAdapterError
+from app.discovery.operational_scan import (
+    OperationalScanError,
+    load_operational_queries,
+    run_operational_scan,
+)
 from app.qualification import qualify_contact
+from app.lab_service import list_experiments, list_lab_case_options, run_comparison_experiment
 from app.schemas.assessment import AssessmentResult
+from app.schemas.assessment_v3 import ConversationAssessmentV3Result
 from app.schemas.conversation import (
     ConversationCreate,
     ConversationRead,
     conversation_orm_payload,
+)
+from app.schemas.discovery import (
+    DiscoveryCandidateRead,
+    DiscoveryOutcomeRead,
+    DiscoveryOutcomeUpsert,
+    RevealedAffinityLevel,
+)
+from app.schemas.discovery_scan import (
+    OperationalScanRequest,
+    OperationalScanResult,
+    SearchQueryRead,
 )
 from app.schemas.qualification import QualificationInput, QualificationResult
 from app.schemas.review import (
@@ -25,9 +53,69 @@ from app.schemas.review import (
     ReviewDecisionType,
     ReviewRead,
 )
+from app.semantics.semantic_cascade_v1 import assess_conversation_cascade_v1
 from app.semantics.llm_classifier import assess_with_optional_llm_details
+from app.workflow import DiscoveryState, DiscoveryTransitionError
 
 router = APIRouter(prefix="/api")
+
+
+class LabExperimentRequest(BaseModel):
+    source: str = "corpus"
+    case_ids: list[str] | None = None
+    input_text: str | None = None
+    providers: list[str] = Field(default_factory=lambda: ["agnes", "gemma"])
+    repetitions: int = 1
+    experiment_id: str = "experimento1"
+
+
+@router.get("/lab/cases")
+def get_lab_cases() -> list[dict[str, str]]:
+    return list_lab_case_options()
+
+
+@router.get("/lab/experiments")
+def get_lab_experiments() -> list[dict[str, str]]:
+    return list_experiments()
+
+
+@router.post("/lab/experiments")
+def create_lab_experiment(
+    payload: LabExperimentRequest, db: Session = Depends(get_db)
+) -> dict:
+    try:
+        return run_comparison_experiment(
+            db,
+            source=payload.source,
+            case_ids=payload.case_ids,
+            input_text=payload.input_text,
+            providers=payload.providers,
+            repetitions=payload.repetitions,
+            experiment_id=payload.experiment_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.get("/discovery/search-queries", response_model=list[SearchQueryRead])
+def list_operational_search_queries() -> list[SearchQueryRead]:
+    return [SearchQueryRead.model_validate(item.model_dump()) for item in load_operational_queries()]
+
+
+@router.post("/discovery/scan", response_model=OperationalScanResult)
+def execute_operational_scan(
+    payload: OperationalScanRequest,
+    db: Session = Depends(get_db),
+) -> OperationalScanResult:
+    try:
+        return run_operational_scan(db, payload)
+    except OperationalScanError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Last30DaysAdapterError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Discovery search is unavailable; verify last30days configuration",
+        ) from exc
 
 
 @router.post("/conversations", response_model=ConversationRead)
@@ -147,6 +235,126 @@ def list_assessments(conversation_id: int, db: Session = Depends(get_db)):
 
 
 @router.post(
+    "/conversations/{conversation_id}/assessments/v3",
+    response_model=ConversationAssessmentV3Result,
+)
+def create_conversation_assessment_v3(
+    conversation_id: int,
+    db: Session = Depends(get_db),
+) -> ConversationAssessmentV3Result:
+    conversation = db.get(Conversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    cascade = assess_conversation_cascade_v1(
+        conversation_id=conversation.id,
+        title=conversation.title,
+        text=conversation.text,
+        context=conversation.context,
+        agnes_enabled=settings.semantic_llm_enabled,
+        agnes_model_name=settings.semantic_llm_model or settings.openai_model,
+        agnes_base_url=settings.semantic_llm_base_url,
+        agnes_api_key=settings.semantic_llm_api_key or settings.openai_api_key,
+        gemma_enabled=bool(settings.gemini_api_key),
+        gemma_model_name=settings.gemini_model,
+        gemma_base_url=settings.gemini_base_url,
+        gemma_api_key=settings.gemini_api_key,
+    )
+    result = cascade.agnes_assessment
+    record = ConversationAssessmentV3(
+        conversation_id=conversation.id,
+        schema_version=result.schema_version,
+        assessment_status=result.assessment_status.value,
+        real_topic=result.real_topic,
+        contextual_meaning=result.contextual_meaning,
+        apparent_affinity=(
+            cascade.resolved_affinity.value if cascade.resolved_affinity else None
+        ),
+        apparent_affinity_domains=[item.value for item in cascade.resolved_affinity_domains],
+        apparent_intention=(
+            cascade.resolved_intention.value if cascade.resolved_intention else None
+        ),
+        intention_summary=result.intention_summary,
+        evidence_fragments=list(
+            dict.fromkeys(result.evidence_fragments + cascade.accepted_additional_evidence)
+        ),
+        rejected_evidence_fragments=result.rejected_evidence_fragments,
+        contradictions=result.contradictions,
+        missing_context=result.missing_context,
+        false_positive_risk=(
+            cascade.resolved_false_positive_risk.value
+            if cascade.resolved_false_positive_risk
+            else None
+        ),
+        uncertainty=(
+            cascade.resolved_uncertainty.value if cascade.resolved_uncertainty else None
+        ),
+        human_review_reason=result.human_review_reason,
+        review_priority=result.review_priority,
+        recommended_review_action=result.recommended_review_action.value,
+        semantic_engine=result.semantic_engine,
+        model_name=result.model_name,
+        safe_error_code=result.safe_error_code,
+        provisional=result.provisional,
+        human_review_required=cascade.human_review_required,
+        cascade_schema_version=cascade.schema_version,
+        gemma_review_triggered=cascade.gemma_review_triggered,
+        gemma_trigger_reasons=cascade.gemma_trigger_reasons,
+        gemma_review=(
+            cascade.gemma_review.model_dump(mode="json") if cascade.gemma_review else None
+        ),
+        deterministic_resolution=cascade.deterministic_resolution,
+        resolution_note=cascade.resolution_note,
+        created_at=result.created_at,
+    )
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+    return ConversationAssessmentV3Result.model_validate(record)
+
+
+@router.get(
+    "/conversations/{conversation_id}/assessments/v3",
+    response_model=list[ConversationAssessmentV3Result],
+)
+def list_conversation_assessments_v3(
+    conversation_id: int,
+    db: Session = Depends(get_db),
+) -> list[ConversationAssessmentV3Result]:
+    if not db.get(Conversation, conversation_id):
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    records = list(
+        db.scalars(
+            select(ConversationAssessmentV3)
+            .where(ConversationAssessmentV3.conversation_id == conversation_id)
+            .order_by(ConversationAssessmentV3.id.asc())
+        )
+    )
+    return [ConversationAssessmentV3Result.model_validate(item) for item in records]
+
+
+@router.get("/conversations/{conversation_id}/assessments/v3/{assessment_id}/cascade")
+def get_conversation_assessment_v3_cascade(
+    conversation_id: int,
+    assessment_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
+    record = db.get(ConversationAssessmentV3, assessment_id)
+    if record is None or record.conversation_id != conversation_id:
+        raise HTTPException(status_code=404, detail="V3 assessment not found")
+    return {
+        "assessment_id": record.id,
+        "conversation_id": record.conversation_id,
+        "cascade_schema_version": record.cascade_schema_version,
+        "gemma_review_triggered": record.gemma_review_triggered,
+        "gemma_trigger_reasons": record.gemma_trigger_reasons,
+        "gemma_review": record.gemma_review,
+        "deterministic_resolution": record.deterministic_resolution,
+        "resolution_note": record.resolution_note,
+    }
+
+
+@router.post(
     "/conversations/{conversation_id}/reviews",
     response_model=ReviewRead,
 )
@@ -158,6 +366,47 @@ def create_review(
     conversation = db.get(Conversation, conversation_id)
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
+
+    if payload.decision == ReviewDecisionType.APPROVE_DISCOVERY_CONTACT:
+        completed_v3 = db.scalar(
+            select(ConversationAssessmentV3.id).where(
+                ConversationAssessmentV3.conversation_id == conversation_id,
+                ConversationAssessmentV3.assessment_status == "COMPLETED",
+            )
+        )
+        if completed_v3 is None:
+            raise HTTPException(
+                status_code=409,
+                detail="Discovery approval requires a completed V3 assessment",
+            )
+        candidate = db.scalar(
+            select(DiscoveryCandidate).where(
+                DiscoveryCandidate.origin_conversation_id == conversation_id
+            )
+        )
+        if candidate is None:
+            candidate = DiscoveryCandidate(
+                origin_conversation_id=conversation.id,
+                public_name=conversation.author_name,
+                public_identity_reference=f"{conversation.source}:{conversation.external_id}",
+                public_profile_url=conversation.conversation_url,
+                created_by=payload.reviewer_identity or "",
+            )
+            db.add(candidate)
+            db.flush()
+        move_candidate(candidate, DiscoveryState.DISCOVERY_APPROACH_APPROVED)
+        review = ReviewDecision(
+            conversation_id=conversation_id,
+            decision=payload.decision.value,
+            edited_response=payload.edited_response,
+            reviewer_notes=payload.reviewer_notes,
+        )
+        db.add(review)
+        db.commit()
+        db.refresh(review)
+        return ReviewRead.model_validate(review).model_copy(
+            update={"discovery_candidate_id": candidate.id}
+        )
 
     status_by_decision = {
         ReviewDecisionType.APPROVE_APPROACH: "APPROACH_APPROVED",
@@ -203,33 +452,54 @@ def create_engagement_event(
     payload: EngagementCreate,
     db: Session = Depends(get_db),
 ):
-    conversation = db.get(Conversation, conversation_id)
-    if not conversation:
+    if not db.get(Conversation, conversation_id):
         raise HTTPException(status_code=404, detail="Conversation not found")
+    raise HTTPException(
+        status_code=409,
+        detail="New engagement events require a discovery_candidate_id endpoint",
+    )
 
-    if payload.event_type == EngagementEventType.CONTACTED:
-        approved = db.scalar(
-            select(ReviewDecision.id)
-            .where(
-                ReviewDecision.conversation_id == conversation_id,
-                ReviewDecision.decision == ReviewDecisionType.APPROVE_APPROACH.value,
-            )
-            .order_by(ReviewDecision.id.desc())
-        )
-        if approved is None:
-            raise HTTPException(
-                status_code=409,
-                detail="Human approval is required before recording contact",
-            )
 
-    status_by_event = {
-        EngagementEventType.CONTACTED: "CONTACTED",
-        EngagementEventType.REPLIED: "REPLIED",
-        EngagementEventType.NO_RESPONSE: "OBSERVING",
-        EngagementEventType.DO_NOT_CONTACT: "DO_NOT_CONTACT",
-    }
+@router.get("/discovery-candidates", response_model=list[DiscoveryCandidateRead])
+def list_discovery_candidates(db: Session = Depends(get_db)) -> list[DiscoveryCandidate]:
+    return list(db.scalars(select(DiscoveryCandidate).order_by(DiscoveryCandidate.id.desc())))
+
+
+@router.get(
+    "/discovery-candidates/{candidate_id}", response_model=DiscoveryCandidateRead
+)
+def get_discovery_candidate(candidate_id: int, db: Session = Depends(get_db)) -> DiscoveryCandidate:
+    candidate = db.get(DiscoveryCandidate, candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail="Discovery candidate not found")
+    return candidate
+
+
+@router.post(
+    "/discovery-candidates/{candidate_id}/engagement-events",
+    response_model=EngagementRead,
+)
+def create_candidate_engagement_event(
+    candidate_id: int,
+    payload: EngagementCreate,
+    db: Session = Depends(get_db),
+) -> EngagementEvent:
+    candidate = db.get(DiscoveryCandidate, candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail="Discovery candidate not found")
+    try:
+        event_target = {
+            EngagementEventType.CONTACTED: DiscoveryState.DISCOVERY_CONTACTED,
+            EngagementEventType.REPLIED: DiscoveryState.DISCOVERY_REPLIED,
+            EngagementEventType.DO_NOT_CONTACT: DiscoveryState.DO_NOT_CONTACT,
+        }.get(payload.event_type)
+        if event_target is not None:
+            move_candidate(candidate, event_target)
+    except DiscoveryTransitionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     event = EngagementEvent(
-        conversation_id=conversation_id,
+        conversation_id=candidate.origin_conversation_id,
+        discovery_candidate_id=candidate.id,
         event_type=payload.event_type.value,
         channel=payload.channel,
         message_text=payload.message_text,
@@ -238,10 +508,93 @@ def create_engagement_event(
         occurred_at=payload.occurred_at,
     )
     db.add(event)
-    conversation.status = status_by_event[payload.event_type]
     db.commit()
     db.refresh(event)
     return event
+
+
+@router.get(
+    "/discovery-candidates/{candidate_id}/engagement-events",
+    response_model=list[EngagementRead],
+)
+def list_candidate_engagement_events(candidate_id: int, db: Session = Depends(get_db)) -> list[EngagementEvent]:
+    if db.get(DiscoveryCandidate, candidate_id) is None:
+        raise HTTPException(status_code=404, detail="Discovery candidate not found")
+    return list(
+        db.scalars(
+            select(EngagementEvent)
+            .where(EngagementEvent.discovery_candidate_id == candidate_id)
+            .order_by(EngagementEvent.occurred_at.asc(), EngagementEvent.id.asc())
+        )
+    )
+
+
+@router.put(
+    "/discovery-candidates/{candidate_id}/outcome",
+    response_model=DiscoveryOutcomeRead,
+)
+def put_discovery_outcome(
+    candidate_id: int,
+    payload: DiscoveryOutcomeUpsert,
+    db: Session = Depends(get_db),
+) -> DiscoveryOutcome:
+    candidate = db.get(DiscoveryCandidate, candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail="Discovery candidate not found")
+    try:
+        outcome = upsert_outcome(db, candidate, payload)
+    except DiscoveryPreconditionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    db.commit()
+    db.refresh(outcome)
+    return outcome
+
+
+@router.get(
+    "/discovery-candidates/{candidate_id}/outcome",
+    response_model=DiscoveryOutcomeRead,
+)
+def get_discovery_outcome(candidate_id: int, db: Session = Depends(get_db)) -> DiscoveryOutcome:
+    outcome = db.scalar(
+        select(DiscoveryOutcome).where(DiscoveryOutcome.discovery_candidate_id == candidate_id)
+    )
+    if outcome is None:
+        raise HTTPException(status_code=404, detail="Discovery outcome not found")
+    return outcome
+
+
+@router.post("/discovery-candidates/{candidate_id}/prequalification-invitation", response_model=DiscoveryCandidateRead)
+def invite_to_prequalification(candidate_id: int, db: Session = Depends(get_db)) -> DiscoveryCandidate:
+    candidate = db.get(DiscoveryCandidate, candidate_id)
+    outcome = db.scalar(select(DiscoveryOutcome).where(DiscoveryOutcome.discovery_candidate_id == candidate_id))
+    if candidate is None:
+        raise HTTPException(status_code=404, detail="Discovery candidate not found")
+    if outcome is None or outcome.revealed_affinity_level not in {RevealedAffinityLevel.PARTIAL.value, RevealedAffinityLevel.CLEAR.value} or not outcome.wants_to_continue:
+        raise HTTPException(status_code=409, detail="Prequalification invitation requires revealed affinity and continuing intent")
+    try:
+        move_candidate(candidate, DiscoveryState.PREQUALIFICATION_INVITED)
+    except DiscoveryTransitionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    db.commit()
+    db.refresh(candidate)
+    return candidate
+
+
+@router.post("/discovery-candidates/{candidate_id}/prequalification-acceptance", response_model=DiscoveryCandidateRead)
+def accept_prequalification(candidate_id: int, db: Session = Depends(get_db)) -> DiscoveryCandidate:
+    candidate = db.get(DiscoveryCandidate, candidate_id)
+    outcome = db.scalar(select(DiscoveryOutcome).where(DiscoveryOutcome.discovery_candidate_id == candidate_id))
+    if candidate is None:
+        raise HTTPException(status_code=404, detail="Discovery candidate not found")
+    if outcome is None or not outcome.consent_to_prequalification or outcome.consent_recorded_at is None or not outcome.wants_to_continue or outcome.revealed_affinity_level not in {RevealedAffinityLevel.PARTIAL.value, RevealedAffinityLevel.CLEAR.value}:
+        raise HTTPException(status_code=409, detail="Prequalification acceptance requires recorded consent, affinity, and continuing intent")
+    try:
+        move_candidate(candidate, DiscoveryState.PREQUALIFICATION_ACCEPTED)
+    except DiscoveryTransitionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    db.commit()
+    db.refresh(candidate)
+    return candidate
 
 
 @router.get(
@@ -272,15 +625,65 @@ def create_qualification(
     conversation = db.get(Conversation, conversation_id)
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    if conversation.status not in {"REPLIED", "QUALIFICATION_STARTED", "NURTURING"}:
-        raise HTTPException(
-            status_code=409,
-            detail="Qualification requires a recorded reply or an active qualification",
+    candidate = db.scalar(
+        select(DiscoveryCandidate).where(
+            DiscoveryCandidate.origin_conversation_id == conversation_id
         )
+    )
+    outcome = (
+        db.scalar(
+            select(DiscoveryOutcome).where(
+                DiscoveryOutcome.discovery_candidate_id == candidate.id
+            )
+        )
+        if candidate is not None
+        else None
+    )
+    try:
+        require_prequalification_eligibility(candidate, outcome)
+    except DiscoveryPreconditionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return _create_qualification_record(db, conversation_id, candidate, outcome, payload)
 
+
+@router.post(
+    "/discovery-candidates/{candidate_id}/qualifications",
+    response_model=QualificationResult,
+)
+def create_candidate_qualification(
+    candidate_id: int,
+    payload: QualificationInput,
+    db: Session = Depends(get_db),
+) -> QualificationResult:
+    candidate = db.get(DiscoveryCandidate, candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail="Discovery candidate not found")
+    outcome = db.scalar(
+        select(DiscoveryOutcome).where(
+            DiscoveryOutcome.discovery_candidate_id == candidate.id
+        )
+    )
+    try:
+        require_prequalification_eligibility(candidate, outcome)
+    except DiscoveryPreconditionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return _create_qualification_record(
+        db, candidate.origin_conversation_id, candidate, outcome, payload
+    )
+
+
+def _create_qualification_record(
+    db: Session,
+    conversation_id: int,
+    candidate: DiscoveryCandidate,
+    outcome: DiscoveryOutcome,
+    payload: QualificationInput,
+) -> QualificationResult:
     result = qualify_contact(payload)
     record = QualificationRecord(
         conversation_id=conversation_id,
+        discovery_candidate_id=candidate.id,
+        discovery_outcome_id=outcome.id,
         input_payload=payload.model_dump(mode="json"),
         traffic_light=result.traffic_light.value,
         status=result.status.value,
@@ -294,7 +697,6 @@ def create_qualification(
         missing_information=result.missing_information,
     )
     db.add(record)
-    conversation.status = result.radar_state.value
     db.commit()
     return result
 

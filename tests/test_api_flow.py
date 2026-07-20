@@ -100,19 +100,7 @@ def test_local_conversation_flow_persists_deduplicates_assesses_and_reviews(monk
                 "occurred_at": "2026-07-18T12:00:00Z",
             },
         )
-        assert contacted.status_code == 200
-        assert contacted.json()["event_type"] == "CONTACTED"
-
-        replied = client.post(
-            f"/api/conversations/{conversation_id}/engagement-events",
-            json={
-                "event_type": "REPLIED",
-                "channel": "public_forum",
-                "response_text": "Gracias, me interesa conocer el proyecto.",
-                "occurred_at": "2026-07-18T13:00:00Z",
-            },
-        )
-        assert replied.status_code == 200
+        assert contacted.status_code == 409
 
         review_history = client.get(
             f"/api/conversations/{conversation_id}/reviews"
@@ -120,18 +108,9 @@ def test_local_conversation_flow_persists_deduplicates_assesses_and_reviews(monk
         assert review_history.status_code == 200
         assert len(review_history.json()) == 1
 
-        engagement_history = client.get(
-            f"/api/conversations/{conversation_id}/engagement-events"
-        )
-        assert engagement_history.status_code == 200
-        assert [item["event_type"] for item in engagement_history.json()] == [
-            "CONTACTED",
-            "REPLIED",
-        ]
-
         refreshed = client.get("/api/conversations")
         assert refreshed.status_code == 200
         reviewed_item = next(
             item for item in refreshed.json() if item["id"] == conversation_id
         )
-        assert reviewed_item["status"] == "REPLIED"
+        assert reviewed_item["status"] == "APPROACH_APPROVED"

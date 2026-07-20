@@ -7,14 +7,14 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://inlakech:inlakech@postgres:5432/inlakech"
     openai_api_key: str | None = None
     openai_model: str | None = None
-    semantic_llm_enabled: bool = False
-    semantic_llm_provider: str = "default"
-    semantic_llm_base_url: str | None = None
+    semantic_llm_enabled: bool = True
+    semantic_llm_provider: str = "agnes"
+    semantic_llm_base_url: str | None = "https://apihub.agnes-ai.com/v1"
     semantic_llm_api_key: str | None = Field(
         default=None,
         validation_alias=AliasChoices("SEMANTIC_LLM_API_KEY", "AGNES_API_KEY"),
     )
-    semantic_llm_model: str | None = None
+    semantic_llm_model: str | None = "agnes-2.0-flash"
     gemini_api_key: str | None = None
     gemini_model: str = "gemma-4-26b-a4b-it"
     gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"

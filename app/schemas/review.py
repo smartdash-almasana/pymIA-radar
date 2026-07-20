@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, model_validator
 
 class ReviewDecisionType(StrEnum):
     APPROVE_APPROACH = "APPROVE_APPROACH"
+    APPROVE_DISCOVERY_CONTACT = "APPROVE_DISCOVERY_CONTACT"
     KEEP_OBSERVING = "KEEP_OBSERVING"
     DISCARD = "DISCARD"
     DO_NOT_CONTACT = "DO_NOT_CONTACT"
@@ -15,11 +16,20 @@ class ReviewCreate(BaseModel):
     decision: ReviewDecisionType
     edited_response: str | None = Field(default=None, max_length=5000)
     reviewer_notes: str | None = Field(default=None, max_length=5000)
+    reviewer_identity: str | None = Field(default=None, max_length=255)
 
     @model_validator(mode="after")
     def require_message_for_approval(self) -> "ReviewCreate":
-        if self.decision == ReviewDecisionType.APPROVE_APPROACH and not self.edited_response:
+        if self.decision in {
+            ReviewDecisionType.APPROVE_APPROACH,
+            ReviewDecisionType.APPROVE_DISCOVERY_CONTACT,
+        } and not self.edited_response:
             raise ValueError("edited_response is required when approving an approach")
+        if (
+            self.decision == ReviewDecisionType.APPROVE_DISCOVERY_CONTACT
+            and not self.reviewer_identity
+        ):
+            raise ValueError("reviewer_identity is required for discovery approval")
         return self
 
 
@@ -30,6 +40,7 @@ class ReviewRead(BaseModel):
     edited_response: str | None
     reviewer_notes: str | None
     created_at: datetime
+    discovery_candidate_id: int | None = None
 
     model_config = {"from_attributes": True}
 
@@ -62,6 +73,7 @@ class EngagementCreate(BaseModel):
 class EngagementRead(BaseModel):
     id: int
     conversation_id: int
+    discovery_candidate_id: int | None
     event_type: str
     channel: str | None
     message_text: str | None

@@ -13,6 +13,9 @@ class EngagementEvent(Base):
     conversation_id: Mapped[int] = mapped_column(
         ForeignKey("conversations.id"), index=True
     )
+    discovery_candidate_id: Mapped[int | None] = mapped_column(
+        ForeignKey("discovery_candidates.id"), nullable=True, index=True
+    )
     event_type: Mapped[str] = mapped_column(String(50), index=True)
     channel: Mapped[str | None] = mapped_column(String(50), nullable=True)
     message_text: Mapped[str | None] = mapped_column(Text, nullable=True)
