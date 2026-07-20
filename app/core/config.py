@@ -15,6 +15,9 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("SEMANTIC_LLM_API_KEY", "AGNES_API_KEY"),
     )
     semantic_llm_model: str | None = None
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemma-4-26b-a4b-it"
+    gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"
     relaticle_base_url: str = "http://relaticle:8080"
     relaticle_api_token: str | None = None
     last30days_path: str = "/opt/last30days-skill"

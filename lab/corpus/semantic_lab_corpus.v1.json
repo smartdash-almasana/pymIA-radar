@@ -1,0 +1,43 @@
+{
+  "schema_version": "radar-lab-corpus/v1",
+  "source": "config/semantic_calibration_corpus.v2.json",
+  "status": "DRAFT",
+  "case_id_contract": "Neutral CASE_NNN identifiers are the only identifiers exposed by the laboratory UI.",
+  "cases": [
+    {
+      "case_id": "CASE_001",
+      "source_case_id": "V2-NEG-FOOTBALL",
+      "text": "No hay rivalidad entre Argentina y Portugal, solo entre Messi y Cristiano.",
+      "context": null,
+      "label_provenance": "DRAFT_REQUIRES_HUMAN_REVIEW"
+    },
+    {
+      "case_id": "CASE_002",
+      "source_case_id": "V2-NEG-SPECULATION",
+      "text": "Quiero invertir en Yucatán, pero solo busco una salida especulativa inmediata.",
+      "context": null,
+      "label_provenance": "DRAFT_REQUIRES_HUMAN_REVIEW"
+    },
+    {
+      "case_id": "CASE_003",
+      "source_case_id": "V2-SYMPATHY",
+      "text": "Me gustan los proyectos regenerativos, aunque no estoy buscando participar en ninguno.",
+      "context": null,
+      "label_provenance": "DRAFT_REQUIRES_HUMAN_REVIEW"
+    },
+    {
+      "case_id": "CASE_004",
+      "source_case_id": "V2-EXPLORATION",
+      "text": "Busco una comunidad regenerativa en Yucatán y quiero conocer cómo se participa.",
+      "context": null,
+      "label_provenance": "DRAFT_REQUIRES_HUMAN_REVIEW"
+    },
+    {
+      "case_id": "CASE_005",
+      "source_case_id": "V2-ACTION",
+      "text": "Quiero participar en un proyecto de largo plazo y puedo conversar esta semana para conocer Inlak'ech.",
+      "context": null,
+      "label_provenance": "DRAFT_REQUIRES_HUMAN_REVIEW"
+    }
+  ]
+}
