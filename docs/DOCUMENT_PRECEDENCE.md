@@ -91,6 +91,39 @@ Caminos oficiales:
 
 Una recomendación automática es provisional. La confirmación final requiere información suficiente y revisión humana.
 
+### 6. Arquitectura funcional y técnica de RADAR
+
+Autoridad principal:
+
+1. `RADAR_MANDATORY_OBJECTIVE_DECLARATION.md` para el objetivo obligatorio del producto;
+2. `RADAR_MASTER_ARCHITECTURE_AND_DEVELOPMENT_DIRECTION.md` para objetos de dominio, responsabilidades, embudo de descubrimiento, frontera con precalificación y dirección técnica;
+3. `RADAR_COMMERCIAL_CONVERSION_CONTRACT.md` para el recorrido funcional integral;
+4. especificaciones bajo `docs/specs/` para capacidades delimitadas;
+5. documentación operativa y checkpoints para estado de implementación.
+
+Reglas:
+
+- la conversación es la unidad inicial de observación;
+- la afinidad pública es siempre aparente y provisional;
+- el contacto humano abre un embudo de descubrimiento distinto del embudo de conversión;
+- un arquetipo solo puede formularse después de diálogo humano suficiente y debe ser confirmado por una persona;
+- la precalificación requiere interés, voluntad y consentimiento explícito;
+- el código y las pruebas demuestran implementación, pero no pueden redefinir el producto ni contradecir los documentos rectores;
+- una especificación `DRAFT` no autoriza cambios de código.
+
+### 7. Jerarquía entre documentación y evidencia técnica
+
+```text
+documentación maestra de Inlak’ech por dominio
+→ objetivo y arquitectura de RADAR
+→ contratos funcionales
+→ especificaciones aprobadas
+→ documentación operativa
+→ código y pruebas como evidencia de implementación
+```
+
+El código vigente puede contener semántica anterior. Esa divergencia constituye un gap técnico; no convierte al código en autoridad normativa.
+
 ## Regla general de resolución
 
 Ante una contradicción:

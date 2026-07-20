@@ -1,5 +1,8 @@
 # Estado actual de ingeniería — 18/07/2026
 
+> **ESTADO HISTÓRICO — SUPERSEDIDO COMO CHECKPOINT VIGENTE EL 19/07/2026.**
+> Se conserva como evidencia del estado anterior a la reconciliación del embudo humano de descubrimiento. La fuente vigente es `docs/CURRENT_ENGINEERING_STATE_2026-07-19.md`.
+
 ## Propósito
 
 Este checkpoint reconcilia el estado documental con el código y la evidencia reproducible del repositorio.

@@ -1,70 +1,111 @@
 # SPEC-005 — Precalificación
 
-**Estado:** IMPLEMENTING — REAL USE PENDING AFTER SPEC-001B
+**Estado:** DRAFT — BLOQUEADA POR SPEC-003A Y VALIDACIÓN DOCUMENTAL
 
 ## Propósito
 
-Determinar, de manera visible y reproducible, si una persona está lista para acceder a agenda, debe entrar en maduración o debe recibir únicamente educación sin calendario.
+Determinar, de manera visible y reproducible, si una persona que completó el embudo humano de descubrimiento está lista para acceder a agenda, debe entrar en maduración o debe recibir únicamente educación sin calendario.
 
 Esta especificación implementa el `Mini-Formulario Portero` definido en el Informe Estratégico Inlak’ech 2.0 y queda subordinada a:
 
+- `docs/RADAR_MANDATORY_OBJECTIVE_DECLARATION.md`;
+- `docs/RADAR_MASTER_ARCHITECTURE_AND_DEVELOPMENT_DIRECTION.md`;
 - `docs/RADAR_COMMERCIAL_CONVERSION_CONTRACT.md`;
 - `docs/DOCUMENT_PRECEDENCE.md`;
+- `docs/specs/003A_discovery_funnel.md`;
 - documentos maestros de Inlak’ech.
+
+## Gate obligatorio de entrada
+
+La precalificación solo puede comenzar cuando existen simultáneamente:
+
+```text
+respuesta humana verificable
++
+afinidad revelada o interés suficiente
++
+voluntad expresa de continuar
++
+consentimiento explícito para precalificación
+```
+
+Debe existir un estado previo:
+
+```text
+PREQUALIFICATION_ACCEPTED
+```
+
+Sin ese estado, `QUALIFICATION_STARTED` está prohibido.
+
+La afinidad semántica aparente de una publicación pública no habilita esta especificación.
 
 ## Cinco dimensiones del mini-formulario
 
-1. **Perfil identitario**
-   - `INVERSOR`;
-   - `RESIDENTE`;
-   - `ARTIFICE`.
+### 1. Perfil identitario declarado
 
-2. **Capacidad de capital declarada**
-   - `< USD 50.000`;
-   - `USD 50.000–150.000`;
-   - `> USD 150.000`;
-   - no declarado.
+- `INVERSOR`;
+- `RESIDENTE`;
+- `ARTIFICE`;
+- `NO_DEFINIDO`.
 
-3. **Horizonte temporal**
-   - este mes;
-   - 3–6 meses;
-   - 6–12 meses;
-   - solo mirando;
-   - sin definir.
+### 2. Capacidad de capital declarada
 
-4. **Motivación**
-   - respuesta breve abierta;
-   - evaluación humana o semántica separada de coherencia.
+- `< USD 50.000`;
+- `USD 50.000–150.000`;
+- `> USD 150.000`;
+- no declarado.
 
-5. **Anclaje del Artífice**
-   - tierra;
-   - capital;
-   - talento.
+Nunca inferir capital por profesión, ubicación, apariencia, lenguaje o perfil público.
+
+### 3. Horizonte temporal declarado
+
+- este mes;
+- 3–6 meses;
+- 6–12 meses;
+- solo mirando;
+- sin definir.
+
+### 4. Motivación
+
+- respuesta breve abierta;
+- evaluación humana o semántica separada de coherencia;
+- conservación del texto original.
+
+### 5. Anclaje del Artífice
+
+- tierra;
+- capital;
+- talento.
 
 El anclaje solo corresponde cuando el perfil declarado es `ARTIFICE`.
 
-Seleccionar `TIERRA`, `CAPITAL` o `TALENTO` no alcanza para obtener verde. Debe existir una descripción concreta y revisable del anclaje. La ausencia de tipo de anclaje produce rojo; un tipo declarado sin evidencia suficiente produce amarillo.
+Seleccionar un tipo no alcanza para obtener verde. Debe existir una descripción concreta y revisable.
 
-## Regla de separación
+## Separaciones obligatorias
 
 ```text
-perfil identitario del mini-formulario
-!= arquetipo psicológico
+arquetipo
+!= perfil identitario del mini-formulario
 != camino de participación
 ```
 
-El arquetipo puede ser propuesto por RADAR con evidencia. El camino se recomienda a partir de las respuestas documentadas y debe poder revisarse humanamente.
+- El arquetipo solo puede surgir como hipótesis posterior al diálogo humano y debe ser confirmado por una persona.
+- El perfil identitario es una autodefinición situada en el mini-formulario.
+- El camino de participación es una recomendación comercial basada en respuestas documentadas.
+
+Ninguna dimensión sustituye automáticamente a otra.
 
 ## Semáforo determinístico
 
 ### ROJO
 
-Criterios:
+Criterios iniciales:
 
 - capital declarado inferior a USD 50.000;
 - horizonte `SOLO_MIRANDO`;
 - perfil sin definir;
-- Artífice sin tipo de anclaje.
+- Artífice sin tipo de anclaje;
+- información incompatible con los caminos vigentes.
 
 Resultado:
 
@@ -75,12 +116,13 @@ NO_CALIFICADO
 
 ### AMARILLO
 
-Criterios:
+Criterios iniciales:
 
-- capital compatible, pero horizonte de 3–6 meses o 6–12 meses;
-- capital todavía no declarado;
+- capital compatible, pero horizonte de 3–6 o 6–12 meses;
+- capital no declarado;
 - motivación aún no confirmada;
-- información mínima incompleta.
+- información mínima incompleta;
+- objeciones que requieren maduración.
 
 Resultado:
 
@@ -91,14 +133,15 @@ EN_MADURACION
 
 ### VERDE
 
-Criterios:
+Criterios iniciales:
 
 - capital en rango compatible;
 - disponibilidad este mes;
 - motivación coherente;
-- información mínima completa.
+- información mínima completa;
+- consentimiento vigente.
 
-Resultado comercial:
+Resultado:
 
 ```text
 CALIFICADO
@@ -125,51 +168,82 @@ ARTIFICE con anclaje
 → ARTIFICE_ANCLAJE
 ```
 
-El `RESIDENTE` con capacidad alta activa la recomendación de `FUNDADOR_CIMENTACION_INTEGRAL`.
+El `RESIDENTE` con capacidad alta puede activar la recomendación de `FUNDADOR_CIMENTACION_INTEGRAL`.
 
-El `SEMBRADOR_PATRIMONIAL` sigue siendo un camino oficial. Se preserva como recomendación cuando la persona lo seleccionó previamente en el selector orientativo del embudo; no se deduce únicamente del perfil `INVERSOR` ni del rango de capital.
+El `SEMBRADOR_PATRIMONIAL` sigue siendo un camino oficial y se preserva cuando fue seleccionado o expresado por la persona en un selector autorizado. No se deduce únicamente del perfil `INVERSOR` ni del rango de capital.
 
-Toda recomendación de camino es provisional y requiere confirmación humana antes de considerarse una decisión comercial definitiva.
+Toda recomendación requiere confirmación humana antes de considerarse una decisión comercial definitiva.
 
 ## Consentimiento
 
 El consentimiento es un gate ético independiente del semáforo de ajuste.
 
-Una persona puede mostrar ajuste verde, pero sin consentimiento explícito:
+Una persona puede mostrar ajuste verde, pero sin consentimiento vigente:
 
 - no accede a calendario;
 - no se transfiere al CRM;
-- no se registra contacto comercial adicional.
+- no se registra contacto comercial adicional;
+- no se crea oportunidad.
+
+El consentimiento no puede inferirse de una respuesta positiva genérica.
 
 ## Estados
 
-- `NO_CALIFICADO`;
-- `EN_MADURACION`;
-- `CALIFICADO`;
-- `PRIORITARIO`.
+Entrada requerida:
+
+- `PREQUALIFICATION_ACCEPTED`.
+
+Estados de esta especificación:
+
+- `QUALIFICATION_STARTED`;
+- `NURTURING`;
+- `QUALIFIED`;
+- `PRIORITY_QUALIFIED`;
+- `NO_CALIFICADO` como resultado de cualificación;
+- `EN_MADURACION` como estado comercial derivado.
 
 ## Restricciones
 
-- no inferir capital por profesión, ubicación o perfil público;
+- no iniciar desde `DETECTED`, `REVIEW_PENDING`, `DISCOVERY_CONTACTED` o `DISCOVERY_REPLIED`;
+- no inferir capital;
 - no equiparar arquetipo y camino;
-- no crear oportunidad en CRM para rojo o amarillo;
+- no crear oportunidad para rojo o amarillo;
 - no transferir datos sin consentimiento;
-- no inventar el camino Sembrador cuando el mini-formulario no lo determina;
-- toda recomendación de camino debe conservar las respuestas que la originaron.
+- no inventar el camino Sembrador;
+- conservar todas las respuestas que originaron la recomendación;
+- permitir revisión humana de toda salida;
+- conservar la procedencia del consentimiento.
 
-## Implementado en este corte
+## Implementación vigente reutilizable
 
-- contrato Pydantic validado;
+- contrato Pydantic;
 - semáforo determinístico rojo, amarillo y verde;
 - Artífice con anclaje documentado;
 - consentimiento separado del ajuste comercial;
-- persistencia del resultado de precalificación;
-- paquete CRM local permitido solo para `CALIFICADO` o `PRIORITARIO` con consentimiento;
+- persistencia del resultado;
+- paquete CRM local restringido a `CALIFICADO` o `PRIORITARIO` con consentimiento;
 - integración externa bloqueada hasta auditar Relaticle.
 
-## Criterios de aceptación pendientes
+## Gaps de implementación
 
-- aplicar las reglas a respuestas reales obtenidas después de un acercamiento aprobado;
-- confirmar que la persona responsable puede revisar y corregir la recomendación de camino;
-- demostrar persistencia y recuperación del resultado en un caso real;
-- auditar Relaticle antes de cualquier transferencia externa.
+- el enum actual no contiene `PREQUALIFICATION_INVITED` ni `PREQUALIFICATION_ACCEPTED`;
+- el flujo actual puede avanzar de `REPLIED` a `QUALIFICATION_STARTED` sin representar el resultado del descubrimiento;
+- no existe `DiscoveryOutcome`;
+- el gate nuevo todavía no está implementado;
+- los tests vigentes no prueban toda la frontera entre descubrimiento y conversión.
+
+## Criterios de aceptación
+
+- SPEC-003A implementada y verificada;
+- `PREQUALIFICATION_ACCEPTED` persistido con evidencia;
+- reglas aplicadas a respuestas reales;
+- capital e horizonte provenientes de declaración explícita;
+- persona responsable puede revisar y corregir la recomendación;
+- persistencia y recuperación demostradas;
+- intentos prematuros bloqueados;
+- consentimiento revocable y trazable;
+- Relaticle auditado antes de transferencia externa.
+
+## Prohibición de implementación
+
+Mientras esta especificación permanezca `DRAFT`, no autoriza cambios de código.

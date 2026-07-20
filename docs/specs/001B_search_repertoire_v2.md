@@ -6,7 +6,7 @@
 
 Ampliar la recuperación de conversaciones públicas reales para Inlak'ech mediante consultas menos rígidas que las usadas en el repertorio v1.
 
-Esta es la única especificación activa en el corte documentado por `docs/CURRENT_ENGINEERING_STATE.md`.
+Esta especificación conserva su estado operativo heredado hasta que se audite y cierre su informe. No autoriza cambios en la arquitectura semántica, el embudo de descubrimiento ni la precalificación. El estado vigente del conjunto se declara en `docs/CURRENT_ENGINEERING_STATE.md`.
 
 ## Hallazgo de partida
 

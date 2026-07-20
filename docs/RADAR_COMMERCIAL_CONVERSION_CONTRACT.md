@@ -1,262 +1,425 @@
-# RADAR — Contrato obligatorio de conversión comercial
+# RADAR — Contrato integral de descubrimiento y conversión
 
 ## Autoridad
 
-Este documento define el funcionamiento integral de RADAR para el único cliente actual: **Inlak'ech**.
+Este documento define el funcionamiento integral de RADAR para el único cliente actual: **Inlak’ech**.
 
-RADAR no termina cuando encuentra una conversación. Acompaña el recorrido desde la conversación pública detectada hasta el lead calificado y su transferencia controlada a Relaticle.
+Debe leerse subordinado a:
 
 ```text
-DESCUBRIMIENTO
-→ EVALUACIÓN
-→ REVISIÓN Y ACERCAMIENTO
-→ RESPUESTA
-→ PRECALIFICACIÓN
-→ LEAD CALIFICADO
-→ TRANSFERENCIA A RELATICLE
+docs/RADAR_MANDATORY_OBJECTIVE_DECLARATION.md
+docs/RADAR_MASTER_ARCHITECTURE_AND_DEVELOPMENT_DIRECTION.md
+docs/DOCUMENT_PRECEDENCE.md
 ```
 
-La cartografía de fuentes, las consultas y los conectores son entradas del producto. No constituyen por sí mismos el producto completo.
+El nombre histórico del archivo se conserva por compatibilidad, pero el contrato ya no describe un recorrido comercial único. Distingue de manera obligatoria:
 
-## 1. Definiciones comerciales obligatorias
+1. **embudo de descubrimiento**, donde la afinidad puede revelarse mediante vínculo humano;
+2. **embudo de conversión**, donde una persona que aceptó continuar puede ser precalificada.
 
-- **Conversación detectada:** hallazgo persistido sin decisión humana.
-- **Candidato:** conversación que RADAR selecciona para revisión.
-- **Candidato aprobado:** una persona responsable decide que merece acercamiento.
-- **Contactado:** existe evidencia de que el acercamiento fue realizado.
-- **Interesado:** respondió positivamente o pidió más información.
-- **Precalificado:** completó la información mínima requerida.
-- **Lead calificado:** cumple condiciones explícitas para ingresar al embudo comercial.
-- **Oportunidad:** el equipo comercial confirmó una posibilidad concreta y abrió seguimiento en Relaticle.
+---
 
-Está prohibido llamar `lead` a toda persona o conversación encontrada.
+## 1. Flujo integral
 
-## 2. Dimensiones de evaluación separadas
+```text
+DESCUBRIMIENTO DE CONVERSACIÓN
+→ INTERPRETACIÓN SEMÁNTICA APARENTE
+→ REVISIÓN HUMANA
+→ IDENTIFICACIÓN DE PERSONA
+→ CONTACTO HUMANO DE DESCUBRIMIENTO
+→ DIÁLOGO DE DESCUBRIMIENTO
+→ AFINIDAD REVELADA O DESCARTADA
+→ CONSENTIMIENTO PARA CONTINUAR
+→ PRECALIFICACIÓN
+→ LEAD CALIFICADO
+→ TRANSFERENCIA CONTROLADA A RELATICLE
+```
 
-RADAR no debe producir un único puntaje opaco.
+La cartografía de fuentes, las consultas y los conectores son entradas del producto. No constituyen el producto completo.
 
-### Afinidad temática
+---
 
-Compatibilidad de la conversación con los universos de Inlak'ech. Escala `0–100`.
+## 2. Definiciones obligatorias
 
-### Afinidad de valores
+- **Conversación detectada:** hallazgo persistido sin evaluación semántica válida.
+- **Conversación aparentemente afín:** conversación cuya interpretación provisional muestra relación plausible con Inlak’ech.
+- **Persona potencialmente relevante:** identidad pública asociada a una conversación aparentemente afín.
+- **Candidato de descubrimiento:** persona cuya situación fue revisada y aprobada humanamente para considerar un acercamiento.
+- **Participante del descubrimiento:** persona efectivamente contactada que está conociendo Inlak’ech.
+- **Afinidad revelada:** simpatía, identificación, curiosidad o interés expresados por la persona durante el diálogo humano.
+- **Afinidad no confirmada:** ausencia, rechazo o insuficiencia de evidencia humana para continuar.
+- **Persona invitada a precalificación:** persona que manifestó voluntad de continuar y recibió una invitación explícita.
+- **Precalificado:** persona que respondió información mínima suficiente.
+- **Lead calificado:** persona que cumple condiciones explícitas y revisables para ingresar al embudo comercial.
+- **Oportunidad:** posibilidad concreta confirmada por el equipo comercial y gestionada en Relaticle.
 
-Compatibilidad verificable con regeneración, comunidad, legado, largo plazo, pertenencia, honestidad, territorio, participación y rechazo de la especulación inmediata. Escala `0–100`.
+Está prohibido llamar `lead` a una conversación, a una persona detectada o a un candidato de descubrimiento.
 
-### Intención
+---
 
-Señales de que la persona considera una acción: pedir recomendaciones, comparar, participar, invertir, mudarse, consultar costos, solicitar contacto o declarar un plazo. Escala `0–100`.
+## 3. Evaluación semántica de la conversación
 
-### Capacidad declarada
+La evaluación inicial tiene como objeto la conversación, no la personalidad ni la solvencia del autor.
 
-Solo se registra con evidencia explícita. Valores:
+Debe producir, como mínimo:
 
-- `NO_CONOCIDA`
-- `BAJA_DECLARADA`
-- `MEDIA_DECLARADA`
-- `ALTA_DECLARADA`
+- tema real;
+- significado contextual;
+- afinidad semántica aparente;
+- campos de afinidad;
+- intención aparente;
+- resumen de la intención;
+- evidencia textual;
+- contradicciones;
+- contexto faltante;
+- riesgo de falso positivo;
+- incertidumbre;
+- razón para revisión humana.
 
-Nunca inferir capacidad por profesión, apariencia, ubicación o perfil social.
+Debe excluir:
 
-### Momento de decisión
+- arquetipo probable;
+- capacidad económica estimada;
+- camino de participación;
+- calificación comercial;
+- autorización automática de contacto.
 
-- `DESCUBRIMIENTO`
-- `EXPLORACIÓN`
-- `COMPARACIÓN`
-- `EVALUACIÓN_ACTIVA`
-- `LISTO_PARA_CONVERSAR`
-- `LISTO_PARA_PRECALIFICAR`
+La evaluación siempre debe declarar:
 
-### Calidad de evidencia
+```text
+provisional = true
+human_review_required = true
+```
 
-Escala `0–100`, basada en extensión, claridad, contexto, continuidad, respuestas del autor, preguntas, objeciones y actualidad.
+---
+
+## 4. Afinidad e intención
+
+### Afinidad semántica aparente
+
+Compatibilidad provisional del sentido de la conversación con campos relevantes de Inlak’ech.
+
+Puede clasificarse inicialmente como:
+
+- `NINGUNA`;
+- `POSIBLE`;
+- `CLARA`.
+
+### Intención aparente
+
+Dirección de acción expresada o inferida con evidencia.
+
+Puede distinguir:
+
+- `NINGUNA`;
+- `SIMPATIA_TEMATICA`;
+- `EXPLORACION`;
+- `ORIENTADA_A_ACCION`.
+
+La intención aparente no confirma interés en Inlak’ech, porque la persona todavía puede no conocer el proyecto.
 
 ### Riesgo de falso positivo
 
-- `BAJO`
-- `MEDIO`
-- `ALTO`
+- `BAJO`;
+- `MEDIO`;
+- `ALTO`.
 
-## 3. Prioridad para revisión humana
+### Evidencia
 
-La prioridad ordena la bandeja; no califica al contacto.
+Toda interpretación debe conservar fragmentos textuales reales y explicar la relación entre la evidencia y la conclusión.
 
-```text
-prioridad_revision =
-  25% afinidad temática
-+ 25% afinidad de valores
-+ 30% intención
-+ 20% calidad de evidencia
-- penalización por riesgo
-```
+---
 
-Categorías iniciales:
+## 5. Prioridad de revisión humana
 
-- `80–100`: `REVISAR_PARA_ACERCAMIENTO`
-- `60–79`: `REVISAR_O_MADURAR`
-- `40–59`: `OBSERVAR`
-- `0–39`: `DESCARTAR`
+La prioridad sirve únicamente para ordenar la bandeja. No califica a la persona.
 
-La penalización por riesgo deberá quedar explícita y testeada antes de implementar el clasificador productivo.
+Puede derivarse de reglas transparentes aplicadas a:
 
-## 4. Arquetipos tentativos
+- afinidad aparente;
+- intención aparente;
+- calidad de evidencia;
+- actualidad;
+- riesgo de falso positivo.
 
-RADAR puede proponer, nunca diagnosticar:
+No puede incorporar:
 
-- `PIONERO_VISIONARIO`
-- `SEMBRADOR_PACIENTE`
-- `ARTIFICE_REGENERATIVO`
+- arquetipo inferido;
+- capacidad económica estimada;
+- profesión;
+- ubicación social;
+- apariencia;
+- supuesta solvencia.
 
-Toda propuesta debe incluir confianza y fragmentos de evidencia.
+La explicación semántica siempre prevalece sobre un número agregado.
 
-## 5. Bandeja de revisión humana
+---
+
+## 6. Bandeja de revisión humana
 
 Cada ficha debe mostrar como mínimo:
 
-- fuente, URL, fecha, texto y contexto;
+- fuente, URL y fecha;
+- texto y contexto;
 - autor o identidad pública disponible;
 - consulta de origen;
-- afinidad temática y de valores;
-- intención;
-- calidad de evidencia;
-- riesgo de falso positivo;
-- arquetipo tentativo;
+- tema real;
+- afinidad e intención aparentes;
 - fragmentos justificativos;
-- objeciones e información faltante;
-- acción recomendada;
+- contradicciones;
+- información faltante;
+- incertidumbre;
+- riesgo de falso positivo;
+- razón de revisión;
 - propuesta editable de acercamiento.
 
 Acciones humanas:
 
-- `APROBAR_ACERCAMIENTO`
-- `EDITAR_MENSAJE`
-- `POSPONER`
-- `OBSERVAR`
-- `DESCARTAR`
-- `MARCAR_DUPLICADO`
-- `REGISTRAR_RESPUESTA`
+- `APROBAR_CONTACTO_DESCUBRIMIENTO`;
+- `EDITAR_MENSAJE`;
+- `POSPONER`;
+- `OBSERVAR`;
+- `DESCARTAR`;
+- `NO_CONTACTAR`;
+- `MARCAR_DUPLICADO`.
 
 RADAR nunca envía mensajes automáticamente.
 
-## 6. Acercamiento
+---
 
-Debe partir del contexto real, aportar valor, evitar urgencia y venta agresiva, pedir permiso para continuar y respetar las reglas de la plataforma.
+## 7. Acercamiento de descubrimiento
+
+El acercamiento debe:
+
+- partir del contexto real;
+- reconocer la inquietud expresada;
+- explicar brevemente una posible conexión con Inlak’ech;
+- aportar valor;
+- evitar urgencia, presión y venta agresiva;
+- solicitar permiso para continuar;
+- respetar las reglas de la plataforma.
 
 ```text
 referencia genuina
-→ reconocimiento de la inquietud
-→ conexión breve con Inlak'ech
+→ reconocimiento del contexto
+→ conexión breve con Inlak’ech
 → aporte útil
 → invitación voluntaria
 ```
 
-El estado solo cambia a `CONTACTED` cuando existe evidencia del envío.
+El estado cambia a `DISCOVERY_CONTACTED` únicamente cuando existe evidencia del envío humano.
 
-## 7. Precalificación
+---
 
-Solo comienza después de una respuesta positiva.
+## 8. Embudo de descubrimiento
 
-Dimensiones mínimas:
+Después del contacto pueden registrarse:
 
-- motivación;
-- camino de participación real de Inlak'ech;
+- respuesta;
+- inicio de diálogo;
+- preguntas;
+- intereses;
+- motivaciones declaradas;
+- objeciones;
+- simpatía revelada;
+- nivel de afinidad revelada;
+- voluntad de continuar;
+- consentimiento para precalificación.
+
+El resultado debe ser registrado por un humano mediante un `DiscoveryOutcome` o equivalente.
+
+Valores iniciales recomendados:
+
+```text
+sympathy_revealed:
+NO | UNCLEAR | YES
+
+revealed_affinity_level:
+NONE | PARTIAL | CLEAR
+```
+
+El LLM puede resumir una respuesta, pero no decidir autónomamente si la afinidad quedó revelada.
+
+---
+
+## 9. Arquetipos
+
+Arquetipos vigentes:
+
+- `PIONERO_VISIONARIO`;
+- `SEMBRADOR_PACIENTE`;
+- `ARTIFICE_REGENERATIVO`.
+
+Regla:
+
+```text
+conversación pública
+→ no autoriza arquetipo
+
+diálogo humano suficiente
+→ permite hipótesis
+
+confirmación humana
+→ permite utilizarla
+```
+
+Toda hipótesis debe conservar:
+
+- evidencia del diálogo;
+- confianza;
+- confirmación humana;
+- responsable y fecha.
+
+El arquetipo no equivale al perfil del mini-formulario ni al camino de participación.
+
+---
+
+## 10. Gate entre descubrimiento y conversión
+
+La precalificación solo puede habilitarse cuando existen simultáneamente:
+
+```text
+respuesta humana verificable
++
+afinidad revelada o interés suficiente
++
+voluntad de continuar
++
+consentimiento explícito
+```
+
+Transiciones prohibidas:
+
+```text
+DETECTED → QUALIFICATION_STARTED
+DISCOVERY_CONTACTED → QUALIFIED
+DISCOVERY_REPLIED → QUALIFICATION_STARTED sin gate humano
+AFFINITY_NOT_CONFIRMED → PREQUALIFICATION_ACCEPTED
+```
+
+---
+
+## 11. Precalificación
+
+Dimensiones mínimas, todas declaradas o confirmadas:
+
+- perfil identitario;
+- camino de participación de interés;
 - horizonte temporal;
-- recursos declarados;
+- recursos o capital declarado;
+- motivación;
+- modalidad de participación;
 - nivel de conocimiento;
 - objeciones;
-- consentimiento explícito.
-
-No inventar caminos de participación ni rangos económicos. Deben provenir de documentación comercial aprobada por Inlak'ech.
+- consentimiento;
+- pedido de siguiente paso.
 
 Resultados:
 
-- `NO_CALIFICADO`
-- `EN_MADURACION`
-- `CALIFICADO`
-- `PRIORITARIO`
+- `NO_CALIFICADO`;
+- `EN_MADURACION`;
+- `CALIFICADO`;
+- `PRIORITARIO`.
 
-Toda decisión debe ser explicable y revisable.
+Toda decisión debe ser determinística cuando corresponda, explicable y revisable.
 
-## 8. Límite entre RADAR y Relaticle
+---
+
+## 12. Límite entre RADAR y Relaticle
 
 RADAR realiza:
 
-- descubrimiento;
+- descubrimiento público;
 - persistencia y deduplicación;
-- evaluación;
-- revisión;
-- registro del acercamiento y respuesta;
+- interpretación semántica provisional;
+- revisión humana;
+- registro de contacto y respuesta;
+- administración del descubrimiento;
+- registro de afinidad revelada;
+- consentimiento;
 - precalificación;
 - decisión de calificación.
 
-Relaticle administra el seguimiento comercial una vez que existe una persona identificable y una vía legítima de contacto, especialmente desde la transferencia de un lead calificado.
+Relaticle administra el seguimiento comercial una vez que existe una persona identificable, consentimiento suficiente y una decisión válida de transferencia.
 
-No crear indiscriminadamente personas en Relaticle. Crear o actualizar registro cuando:
+No crear indiscriminadamente personas u oportunidades en Relaticle.
 
-1. el acercamiento fue aprobado y existe identidad o contacto utilizable;
-2. la persona respondió;
-3. comenzó la precalificación;
-4. el equipo decidió incorporarla al seguimiento.
+Crear oportunidad únicamente para leads calificados o por aprobación comercial explícita documentada.
 
-Crear oportunidad únicamente para leads calificados o por aprobación comercial explícita.
+---
 
-## 9. Estados del ciclo
+## 13. Estados objetivo
 
-- `DETECTED`
-- `REVIEW_PENDING`
-- `OBSERVING`
-- `APPROACH_APPROVED`
-- `CONTACTED`
-- `REPLIED`
-- `QUALIFICATION_STARTED`
-- `NURTURING`
-- `QUALIFIED`
-- `PRIORITY_QUALIFIED`
-- `TRANSFERRED_TO_CRM`
-- `OPPORTUNITY_OPEN`
-- `DISCARDED`
-- `DO_NOT_CONTACT`
+```text
+DETECTED
+SEMANTIC_AFFINITY_DETECTED
+HUMAN_REVIEW_PENDING
+DISCOVERY_CANDIDATE
+DISCOVERY_APPROACH_APPROVED
+DISCOVERY_CONTACTED
+DISCOVERY_REPLIED
+DISCOVERY_DIALOGUE_ACTIVE
+AFFINITY_REVEALED
+AFFINITY_NOT_CONFIRMED
+DISCOVERY_CLOSED
+PREQUALIFICATION_INVITED
+PREQUALIFICATION_ACCEPTED
+QUALIFICATION_STARTED
+NURTURING
+QUALIFIED
+PRIORITY_QUALIFIED
+TRANSFERRED_TO_CRM
+OPPORTUNITY_OPEN
+DISCARDED
+DO_NOT_CONTACT
+```
 
-Responsabilidad principal de RADAR: hasta `QUALIFIED` o `PRIORITY_QUALIFIED`.
+Estos son estados objetivo. La documentación de estado de ingeniería debe distinguir cuáles están implementados y cuáles son gaps.
 
-Responsabilidad principal de Relaticle: desde `TRANSFERRED_TO_CRM` y `OPPORTUNITY_OPEN`.
+---
 
-## 10. Flujo integral obligatorio
+## 14. Flujo integral obligatorio
 
-1. Ejecutar consultas.
+1. Ejecutar consultas autorizadas.
 2. Encontrar una conversación real.
-3. Normalizar, deduplicar y guardar.
-4. Evaluar afinidad temática.
-5. Evaluar afinidad de valores.
-6. Estimar intención.
-7. Evaluar calidad de evidencia y riesgo.
-8. Calcular prioridad de revisión.
-9. Proponer arquetipo tentativo.
-10. Someter a revisión humana.
-11. Aprobar, observar, posponer o descartar.
-12. Proponer acercamiento editable.
-13. Registrar envío humano.
-14. Registrar respuesta.
-15. Iniciar precalificación únicamente con interés.
-16. Evaluar motivación, camino, plazo, recursos y consentimiento.
-17. Clasificar el contacto.
-18. Transferir a Relaticle cuando corresponda.
-19. Crear persona, oportunidad, nota y tarea según reglas.
-20. Continuar el seguimiento comercial en Relaticle.
+3. Normalizar, deduplicar y persistir.
+4. Reconstruir tema y contexto.
+5. Evaluar afinidad e intención aparentes.
+6. Validar evidencia, contradicciones e incertidumbre.
+7. Ordenar para revisión humana.
+8. Aprobar, observar, posponer, descartar o no contactar.
+9. Proponer un acercamiento editable.
+10. Registrar el envío humano.
+11. Registrar respuesta.
+12. Abrir y administrar el diálogo de descubrimiento.
+13. Registrar afinidad revelada o no confirmada.
+14. Formular una hipótesis de arquetipo únicamente con diálogo suficiente y confirmación humana.
+15. Obtener voluntad y consentimiento para continuar.
+16. Invitar a precalificación.
+17. Aplicar el cuestionario.
+18. Evaluar datos declarados.
+19. Clasificar el contacto.
+20. Transferir únicamente cuando corresponda.
+21. Continuar el seguimiento comercial en Relaticle.
 
-## 11. Definición de terminado
+---
 
-RADAR no está terminado por buscar fuentes, encontrar conversaciones, asignar puntajes o crear contactos en el CRM.
+## 15. Definición de terminado
+
+RADAR no está terminado por buscar fuentes, encontrar conversaciones, asignar puntajes, sugerir mensajes o crear registros locales.
 
 Debe existir evidencia reproducible de:
 
 ```text
 conversación real
-→ candidato evaluado
+→ afinidad aparente explicada
 → revisión humana
-→ acercamiento
+→ contacto de descubrimiento
 → respuesta
+→ diálogo humano
+→ afinidad revelada o descartada
+→ consentimiento
 → precalificación
 → lead calificado
-→ oportunidad en Relaticle
+→ transferencia controlada
 ```

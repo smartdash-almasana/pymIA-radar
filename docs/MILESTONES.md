@@ -4,56 +4,91 @@
 
 - repositorio levanta;
 - pruebas mínimas pasan;
-- alcance congelado;
-- dependencias externas identificadas.
+- alcance dedicado congelado;
+- dependencias externas identificadas;
+- autoridad documental establecida.
 
 ## M1 — Descubrimiento real
 
-- last30days-skill auditado;
+- last30days auditado;
 - búsquedas reales;
 - resultados normalizados;
-- persistencia y deduplicación.
+- persistencia y deduplicación;
+- corpus experimental separado de operación.
 
-## M2 — Afinidad explicable
+## M2 — Afinidad aparente explicable
 
-- perfil Inlak'ech completo;
+- contrato centrado en conversación;
+- tema y contexto interpretados;
+- afinidad e intención aparentes separadas;
+- evidencia literal validada;
+- contradicciones e incertidumbre;
 - corpus positivo, negativo y ambiguo;
-- clasificación estructurada;
-- métricas iniciales.
+- métricas iniciales;
+- ausencia de arquetipo y capacidad en la lectura pública.
 
 ## M3 — Revisión operativa
 
-- bandeja;
-- evidencia;
-- aprobación;
+- bandeja de conversaciones;
+- evidencia y contexto;
+- aprobación de contacto de descubrimiento;
 - edición;
+- observación;
 - descarte;
-- historial.
+- no contactar;
+- historial persistente.
 
-## M4 — Relaticle
+## M4 — Descubrimiento humano
+
+- caso de descubrimiento persistente;
+- contacto y respuesta registrados;
+- diálogo activo;
+- resultado humano;
+- afinidad revelada, ambigua o no confirmada;
+- motivaciones y objeciones;
+- hipótesis de arquetipo posterior al diálogo y confirmada humanamente;
+- consentimiento o cierre.
+
+## M5 — Precalificación consentida
+
+- invitación y aceptación registradas;
+- cuestionario;
+- datos declarados;
+- reglas determinísticas;
+- estados;
+- recomendación revisable;
+- bloqueo sin consentimiento.
+
+## M6 — Relaticle auditado
 
 - API real auditada;
-- persona;
-- oportunidad;
-- tarea;
-- nota;
+- contrato de transferencia;
+- persona creada solo cuando corresponde;
+- oportunidad únicamente para lead permitido;
+- tarea y nota;
 - sincronización de estados.
 
-## M5 — Precalificación
+## M7 — Piloto real
 
-- cuestionario;
-- reglas;
-- estados;
-- actualización en CRM.
-
-## M6 — Piloto real
-
-- entre 100 y 300 conversaciones;
-- medición de falsos positivos;
+- entre 100 y 300 conversaciones para búsqueda y semántica;
+- falsos positivos medidos;
 - candidatos revisados;
+- contactos humanos reales;
+- descubrimientos cerrados con y sin afinidad;
+- precalificaciones consentidas;
 - leads transferidos;
 - informe final.
 
 ## Cierre
 
-El proyecto solo se declara listo cuando M6 está verificado.
+El proyecto solo se declara listo cuando M7 está verificado y existe al menos un recorrido real reconstruible:
+
+```text
+conversación
+→ revisión
+→ descubrimiento humano
+→ consentimiento
+→ precalificación
+→ lead calificado
+→ transferencia
+```

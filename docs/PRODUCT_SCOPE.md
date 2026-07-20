@@ -1,55 +1,87 @@
 # Alcance del producto
 
-Este documento está subordinado a `RADAR_MANDATORY_OBJECTIVE_DECLARATION.md`, que constituye la definición obligatoria y canónica del producto.
+Este documento está subordinado a:
+
+```text
+docs/RADAR_MANDATORY_OBJECTIVE_DECLARATION.md
+docs/RADAR_MASTER_ARCHITECTURE_AND_DEVELOPMENT_DIRECTION.md
+```
 
 ## Jerarquía del proyecto
 
-**Proyecto global:** Inlak'ech.
+**Proyecto global:** Inlak’ech.
+**Instrumento de prospección y descubrimiento:** RADAR.
 
-**Instrumento comercial y de inteligencia:** RADAR.
+RADAR existe para ayudar a Inlak’ech a encontrar conversaciones aparentemente afines, identificar personas potencialmente relevantes, facilitar un vínculo humano de descubrimiento y transferir al embudo comercial únicamente a quienes aceptaron continuar y fueron precalificados.
 
-RADAR existe para ayudar a Inlak'ech a encontrar, comprender y acercarse a las personas correctas. No reemplaza ni redefine al proyecto Inlak'ech.
+## Alcance actual
 
-## Alcance de RADAR
+Una sola configuración narrativa, semántica y comercial: Inlak’ech.
 
-Una sola configuración narrativa y comercial: Inlak'ech.
+RADAR no es un producto genérico ni multiempresa.
 
 ## Usuario principal
 
-Persona responsable de revisar candidatos y decidir el contacto.
+La persona responsable de:
+
+- revisar conversaciones;
+- decidir si corresponde un acercamiento;
+- realizar o supervisar el contacto humano;
+- registrar el resultado del descubrimiento;
+- validar hipótesis de arquetipo;
+- autorizar el paso a precalificación;
+- revisar la cualificación.
 
 ## Problema
 
-Las personas potencialmente afines ya conversan públicamente sobre inversión consciente,
-regeneración, comunidad, patrimonio y proyectos con propósito, pero hoy no existe un
-mecanismo ordenado para encontrarlas, evaluarlas y llevarlas al embudo comercial.
+Las personas potencialmente afines ya conversan públicamente sobre inversión consciente, regeneración, comunidad, patrimonio, territorio y proyectos con propósito. Esas conversaciones están dispersas y mezcladas con ruido semántico.
+
+Inlak’ech necesita encontrarlas, comprender su contexto, decidir humanamente si corresponde un contacto y descubrir si existe afinidad real antes de iniciar cualquier recorrido comercial.
 
 ## Resultado esperado
 
-Entregar leads calificados al proceso comercial de Inlak'ech.
+```text
+conversaciones aparentemente afines
+→ candidatos de descubrimiento revisados
+→ contactos humanos trazables
+→ afinidad revelada o descartada
+→ precalificación consentida
+→ leads calificados
+```
 
 ## Capacidades incluidas
 
-- descubrimiento de conversaciones;
-- normalización;
-- deduplicación;
-- clasificación de afinidad;
-- estimación de intención;
-- arquetipo probable;
-- evidencia y faltantes;
-- bandeja de revisión;
-- sugerencia de acercamiento;
-- precalificación;
-- integración con Relaticle;
-- trazabilidad.
+- descubrimiento de conversaciones públicas;
+- normalización y deduplicación;
+- interpretación de tema y contexto;
+- afinidad e intención aparentes con evidencia;
+- incertidumbre y riesgo de falso positivo;
+- bandeja de revisión humana;
+- identificación de persona pública disponible;
+- sugerencia editable de acercamiento;
+- registro de contacto y respuesta;
+- embudo humano de descubrimiento;
+- registro de afinidad revelada;
+- hipótesis de arquetipo posterior al diálogo y confirmada humanamente;
+- consentimiento para continuar;
+- precalificación con datos declarados;
+- integración controlada con Relaticle;
+- trazabilidad completa.
 
 ## Capacidades excluidas
 
-- automatización total de contacto;
+- asignación de arquetipo desde una publicación pública;
+- inferencia financiera desde perfiles o redes;
+- contacto automático;
 - campañas masivas;
-- scraping cerrado;
+- scraping autenticado o cerrado;
+- venta automática;
 - SaaS;
 - multiempresa;
 - personalización para terceros;
 - CRM propio;
-- facturación.
+- facturación;
+- RAG general;
+- chatbot institucional;
+- portal del fundador;
+- reserva, firma o pagos dentro de RADAR.

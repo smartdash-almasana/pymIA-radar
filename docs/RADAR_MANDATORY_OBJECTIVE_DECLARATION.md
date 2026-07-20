@@ -1,163 +1,369 @@
 # DECLARACIÓN DE OBJETIVO OBLIGATORIA
 
-## Producto
+## Estado y autoridad
 
-**RADAR — Motor de Afinidad Conversacional e Inteligencia Comercial**
+**Producto:** RADAR — Motor de Afinidad Conversacional, Descubrimiento Humano y Precalificación
+**Cliente único:** Inlak’ech
+**Estado:** APROBADO COMO OBJETIVO DE PRODUCTO
 
-## Cliente actual
+Este documento está subordinado a la documentación maestra de Inlak’ech en sus dominios de filosofía, identidad, arquetipos, caminos de participación, cifras y embudo comercial. Para la arquitectura específica de RADAR, debe leerse junto con:
 
-Un único cliente: **Inlak’ech**.
+```text
+docs/RADAR_MASTER_ARCHITECTURE_AND_DEVELOPMENT_DIRECTION.md
+```
 
 Durante esta etapa RADAR no es un SaaS, no es multiempresa y no debe generalizarse para otros clientes.
 
-Toda decisión de producto, arquitectura, interfaz, modelo de datos y prioridad de desarrollo debe responder exclusivamente al caso Inlak’ech.
+---
 
-## Objetivo de RADAR
+## 1. Objetivo de RADAR
 
-RADAR debe permitir que Inlak’ech encuentre, evalúe y convierta en oportunidades comerciales a personas que ya están expresando públicamente intereses, motivaciones, valores o intenciones compatibles con el proyecto.
+RADAR debe permitir que Inlak’ech encuentre conversaciones públicas cuyo sentido parezca afín al proyecto, identifique a las personas que participan en ellas, facilite un contacto humano de descubrimiento y, únicamente cuando la afinidad se revela y existe consentimiento para continuar, inicie la precalificación y entregue leads calificados al embudo comercial.
 
-Su finalidad concreta es:
+Definición obligatoria:
 
-> Encontrar conversaciones públicas donde existan señales verificables de afinidad con Inlak’ech, determinar si detrás de esa afinidad puede existir una intención real de participación o inversión, ayudar a iniciar un acercamiento humano y transferir al embudo comercial únicamente a los contactos suficientemente calificados.
+> Encontrar conversaciones públicas aparentemente afines a Inlak’ech, identificar a las personas que las expresan, facilitar un contacto humano de descubrimiento y, solo cuando la afinidad se revela y existe consentimiento para continuar, iniciar la precalificación y entregar los mejores candidatos al embudo comercial.
 
-RADAR no debe limitarse a buscar menciones ni palabras clave.
+RADAR no debe limitarse a buscar menciones ni palabras clave. Debe reconstruir el sentido suficiente de la conversación para distinguir afinidad semántica aparente, intención aparente, ruido léxico, contradicciones e incertidumbre.
 
-Debe interpretar el sentido de las conversaciones y distinguir entre interés superficial, afinidad temática, afinidad de valores, curiosidad, intención comercial, intención de inversión, capacidad todavía no confirmada, candidato que merece contacto, contacto que merece precalificación y lead listo para ingresar al embudo.
+---
 
-## Problema concreto que debe resolver
+## 2. Recorrido integral obligatorio
 
-Las personas potencialmente compatibles con Inlak’ech no necesariamente están buscando “Inlak’ech” por su nombre.
+```text
+conversación pública
+→ afinidad semántica aparente
+→ persona potencialmente relevante
+→ revisión humana
+→ candidato de descubrimiento
+→ acercamiento aprobado
+→ contacto humano
+→ diálogo de descubrimiento
+→ afinidad revelada, ambigua o descartada
+→ posible hipótesis de arquetipo basada en diálogo humano
+→ consentimiento o rechazo para continuar
+→ precalificación
+→ lead calificado
+→ transferencia controlada al embudo comercial
+```
 
-Pueden estar conversando sobre inversión regenerativa, proyectos con propósito, ecoaldeas, hospitalidad sustentable, patrimonio de largo plazo, comunidades intencionales, vida en contacto con la naturaleza, inversión de impacto, turismo consciente, construcción de legado, proyectos inmobiliarios no especulativos, participación comunitaria y Yucatán o México como destino de inversión o residencia.
+La búsqueda, el scraping permitido, el LLM, los puntajes y el CRM son piezas auxiliares. Ninguna constituye por sí sola el producto.
 
-Actualmente esas conversaciones están dispersas entre plataformas, comunidades, videos, comentarios, foros y sitios públicos.
+---
 
-El equipo de Inlak’ech no puede encontrarlas manualmente de forma sistemática, revisar grandes volúmenes, separar afinidad real de ruido, detectar intención, conservar evidencia, ordenar el seguimiento ni convertir los hallazgos en leads.
+## 3. Dos embudos distintos
 
-RADAR debe resolver ese recorrido completo.
+### 3.1. Embudo de descubrimiento
 
-## Resultado operativo esperado
+Su finalidad es revelar si la afinidad aparente detectada en una conversación pública se sostiene cuando la persona conoce Inlak’ech mediante un vínculo humano legítimo.
 
-RADAR debe entregar al responsable comercial de Inlak’ech una bandeja de candidatos ordenados, explicados y trazables.
+No busca vender, inducir inversión, forzar una reunión ni obtener datos económicos de manera encubierta.
 
-Cada candidato deberá mostrar como mínimo: conversación original, fuente, enlace, fecha, autor o identidad pública disponible, consulta que permitió encontrarlo, fragmentos de evidencia, nivel de afinidad con Inlak’ech, nivel de intención estimada, arquetipo probable, razones por las que podría ser relevante, razones por las que podría no serlo, información faltante, riesgo de falso positivo, acción recomendada y propuesta editable de acercamiento.
+```text
+afinidad semántica aparente
+→ revisión humana
+→ contacto de descubrimiento
+→ conocimiento inicial de Inlak’ech
+→ diálogo
+→ afinidad revelada o no confirmada
+→ motivaciones y objeciones conocidas
+→ voluntad o rechazo de continuar
+```
 
-El responsable humano deberá poder revisar, aprobar, editar, descartar, posponer, registrar observaciones y decidir si se inicia contacto.
+### 3.2. Embudo de conversión
 
-RADAR nunca debe contactar automáticamente sin aprobación humana.
+Solo comienza cuando existen conjuntamente:
 
-## Definición de afinidad para Inlak’ech
+```text
+afinidad revelada o interés suficiente
++
+voluntad de continuar
++
+consentimiento explícito
+```
 
-La afinidad no se define por una palabra aislada. Se define por la presencia combinada de señales compatibles con la identidad, el modelo y los caminos de participación de Inlak’ech.
+Entonces puede iniciarse:
 
-Señales positivas: regeneración, comunidad, legado, largo plazo, inversión consciente, impacto, pertenencia, territorio, hospitalidad sustentable, desarrollo no especulativo, paciencia estratégica, belleza útil, honestidad, participación activa, búsqueda de propósito, interés patrimonial, respeto cultural y conexión con Yucatán.
+```text
+invitación a precalificación
+→ aceptación
+→ cuestionario
+→ respuestas declaradas
+→ cualificación
+→ camino de participación
+→ lead calificado
+→ embudo comercial
+```
 
-Señales negativas o incompatibles: especulación inmediata, búsqueda exclusiva de retorno rápido, turismo superficial, urgencia artificial, espiritualidad comercial vacía, interés puramente promocional, conversación académica sin intención, curiosidad sin capacidad de acción y rechazo explícito a compromisos de largo plazo.
+---
 
-## Arquetipos operativos
+## 4. Objetos de dominio obligatorios
 
-### Pionero Visionario
+- **Conversación detectada:** hallazgo público persistido sin evaluación semántica válida.
+- **Conversación aparentemente afín:** conversación cuyo sentido presenta una relación plausible con Inlak’ech. Sigue siendo provisional.
+- **Persona potencialmente relevante:** identidad pública vinculada a una conversación aparentemente afín.
+- **Candidato de descubrimiento:** persona aprobada humanamente para considerar un acercamiento.
+- **Participante del descubrimiento:** persona efectivamente contactada que está conociendo Inlak’ech.
+- **Persona con afinidad revelada:** persona que expresó durante el diálogo humano una simpatía, identificación, curiosidad o interés explicable.
+- **Persona invitada a precalificación:** persona que aceptó evaluar una continuidad y aportar información.
+- **Lead precalificado:** persona que respondió información suficiente y obtuvo una cualificación revisable.
+- **Lead transferido:** lead calificado enviado de manera controlada al CRM o embudo autorizado.
 
-Busca construir, liderar, participar, dejar legado, comprender estructura y gobernanza y verificar que el proyecto sea serio y ejecutable.
+Está prohibido llamar `lead` a toda conversación o persona encontrada.
 
-### Sembrador Paciente
+---
 
-Busca patrimonio, largo plazo, estabilidad, crecimiento orgánico, pertenencia y legado generacional.
+## 5. Definición de afinidad
 
-### Artífice Regenerativo
+La afinidad no se define por una palabra aislada. Se reconoce provisionalmente por la relación contextual entre lo dicho y campos relevantes para Inlak’ech, entre ellos:
 
-Busca aportar experiencia, crear, construir, participar en procesos y trabajar con materiales, territorio, cultura o comunidad.
+- inversión consciente;
+- legado;
+- comunidad;
+- regeneración;
+- territorio;
+- belleza útil;
+- paciencia estratégica;
+- construcción con propósito;
+- pertenencia;
+- largo plazo;
+- hospitalidad sustentable;
+- desarrollo no especulativo;
+- impacto;
+- participación activa;
+- respeto cultural;
+- conexión con México o Yucatán.
 
-La clasificación por arquetipo no debe presentarse como certeza psicológica. Debe funcionar como hipótesis para orientar la revisión y el acercamiento.
+Señales de incompatibilidad o cautela:
 
-## Diferencia obligatoria entre afinidad e intención
+- especulación inmediata;
+- retorno rápido como único criterio;
+- turismo superficial sin vínculo con el proyecto;
+- espiritualidad comercial vacía;
+- promoción oportunista;
+- rechazo explícito del largo plazo;
+- coincidencia léxica sin contexto compatible.
+
+Estos campos orientan la interpretación del sentido. No deben implementarse como una lista rígida de palabras.
+
+---
+
+## 6. Diferencias obligatorias
 
 RADAR debe mantener separadas estas dimensiones:
 
-- **Afinidad:** la persona comparte ideas, valores, intereses o sensibilidades compatibles.
-- **Intención:** la persona manifiesta deseo de avanzar, participar, invertir, conocer opciones o establecer contacto.
-- **Capacidad:** la persona declara o demuestra que dispone de recursos, tiempo, experiencia o posibilidades reales.
-- **Calificación:** la persona respondió información suficiente para justificar su ingreso al embudo comercial.
+- **Afinidad semántica aparente:** interpretación provisional de una conversación pública.
+- **Intención aparente:** dirección de acción expresada o inferida con evidencia en esa conversación.
+- **Afinidad revelada:** reacción que la persona manifiesta al conocer Inlak’ech durante el contacto humano.
+- **Capacidad declarada:** información aportada voluntariamente durante la precalificación.
+- **Calificación:** resultado derivado de respuestas suficientes, reglas transparentes y revisión humana.
 
 Nunca debe asumirse:
 
 ```text
-afinidad = intención
+afinidad aparente = afinidad revelada
+afinidad revelada = intención comercial
 intención = capacidad
 capacidad = lead calificado
 ```
 
-## Flujo obligatorio del producto
+---
 
-1. Definir consultas de búsqueda para Inlak’ech.
-2. Encontrar conversaciones públicas reales.
-3. Guardar fuente, URL, texto, fecha y contexto.
-4. Eliminar duplicados.
-5. Evaluar afinidad.
-6. Evaluar intención.
-7. Identificar evidencia y señales negativas.
-8. Proponer arquetipo probable.
-9. Ordenar candidatos.
-10. Mostrar resultados a revisión humana.
-11. Sugerir un acercamiento no invasivo.
-12. Registrar aprobación o descarte.
-13. Registrar respuesta del contacto.
-14. Enviar cuestionario de precalificación.
-15. Evaluar respuestas.
-16. Marcar como no calificado, en maduración, calificado o prioritario.
-17. Transferir únicamente los leads calificados al CRM o embudo de Inlak’ech.
+## 7. Arquetipos
 
-## Qué no es RADAR en esta etapa
+Arquetipos de Inlak’ech:
 
-RADAR no es un CRM, un chatbot, un sistema de branding, una plataforma documental, un RAG general, una herramienta para responder consultas internas, una plataforma multiempresa, un generador automático de campañas, un sistema de spam, un scraper masivo de redes cerradas, un sistema de venta automática ni una herramienta genérica para cualquier cliente.
+- `PIONERO_VISIONARIO`;
+- `SEMBRADOR_PACIENTE`;
+- `ARTIFICE_REGENERATIVO`.
 
-La posibilidad de convertirlo más adelante en un producto configurable o por suscripción queda expresamente pospuesta.
+Regla obligatoria:
 
-## Criterio de éxito para el primer cliente
+```text
+publicación pública
+→ puede aportar señales semánticas
+→ no autoriza clasificación de arquetipo
 
-RADAR será considerado útil para Inlak’ech si demuestra que puede encontrar conversaciones que el equipo no habría detectado manualmente, reducir el volumen de ruido, explicar claramente por qué seleccionó cada conversación, distinguir afinidad de intención, ayudar a iniciar contactos de calidad, registrar el recorrido completo, precalificar interesados y entregar leads reales al embudo comercial.
+diálogo humano suficiente
+→ permite formular una hipótesis
 
-## Definición de producto terminado para esta etapa
+confirmación humana
+→ permite utilizarla para adaptar el recorrido
+```
 
-RADAR no estará terminado por tener una API, una base de datos, una pantalla, un clasificador, resultados sintéticos, integración con un modelo o integración teórica con Relaticle.
+El arquetipo no es diagnóstico psicológico, no equivale al perfil declarado y no determina automáticamente el camino de participación ni la calificación.
 
-Estará terminado cuando exista evidencia reproducible del siguiente recorrido con el caso real de Inlak’ech:
+---
+
+## 8. Responsabilidades
+
+### El LLM puede
+
+- reconstruir tema y contexto;
+- detectar afinidad e intención aparentes;
+- citar evidencia;
+- señalar contradicciones e incertidumbre;
+- sugerir un acercamiento editable;
+- resumir información surgida de un diálogo humano.
+
+### El LLM no puede
+
+- confirmar afinidad personal;
+- inferir capacidad económica;
+- asignar definitivamente un arquetipo;
+- autorizar o ejecutar contacto;
+- inferir consentimiento;
+- convertir a una persona en lead;
+- transferirla al CRM.
+
+### RADAR puede
+
+- buscar, normalizar y deduplicar;
+- validar contratos y evidencia;
+- ordenar la revisión;
+- sugerir acercamientos;
+- registrar decisiones, contactos y respuestas;
+- administrar estados de descubrimiento;
+- administrar la precalificación;
+- aplicar reglas determinísticas a datos declarados;
+- transferir únicamente cuando el gate lo permita.
+
+### El humano debe
+
+- revisar evidencia;
+- decidir si contactar;
+- realizar el contacto;
+- conducir el diálogo de descubrimiento;
+- registrar si la afinidad se reveló;
+- comprender motivaciones y objeciones;
+- validar cualquier hipótesis de arquetipo;
+- obtener consentimiento;
+- revisar la cualificación.
+
+Principio rector:
+
+```text
+el LLM interpreta
+→ RADAR controla y registra
+→ el humano decide y se vincula
+```
+
+---
+
+## 9. Resultado operativo esperado
+
+La bandeja inicial debe presentar conversaciones, no supuestos inversores. Cada ficha debe mostrar como mínimo:
+
+- conversación original;
+- fuente, enlace y fecha;
+- autor o identidad pública disponible;
+- consulta de origen;
+- tema real y contexto;
+- afinidad e intención aparentes;
+- evidencia textual;
+- contradicciones e información faltante;
+- incertidumbre y riesgo de falso positivo;
+- razón para revisión;
+- sugerencia editable de acercamiento.
+
+No debe mostrar como resultado de la lectura pública:
+
+- arquetipo asignado;
+- capacidad económica estimada;
+- camino de participación;
+- calificación comercial.
+
+---
+
+## 10. Precalificación
+
+Solo comienza después de una respuesta humana verificable, interés suficiente, voluntad de continuar y consentimiento explícito.
+
+En esa etapa sí pueden registrarse datos declarados sobre:
+
+- perfil identitario;
+- camino de interés;
+- recursos o rango de capital;
+- horizonte temporal;
+- motivación;
+- modalidad de participación;
+- objeciones;
+- documentación requerida;
+- pedido de siguiente paso.
+
+Resultados posibles:
+
+- `NO_CALIFICADO`;
+- `EN_MADURACION`;
+- `CALIFICADO`;
+- `PRIORITARIO`.
+
+Toda decisión debe ser explicable y revisable.
+
+---
+
+## 11. Qué no es RADAR
+
+RADAR no es:
+
+- CRM propio;
+- chatbot institucional;
+- RAG general;
+- sistema de branding;
+- plataforma documental;
+- herramienta multiempresa;
+- sistema de venta automática;
+- motor de contacto automático;
+- scoring psicológico;
+- inferencia financiera desde perfiles públicos;
+- plataforma de reserva, firma o pagos;
+- portal del fundador.
+
+---
+
+## 12. Criterio de éxito
+
+RADAR será útil cuando demuestre con casos reales que puede:
+
+1. encontrar conversaciones que el equipo no habría detectado;
+2. reducir ruido y falsos positivos;
+3. explicar por qué una conversación parece afín;
+4. permitir una decisión humana informada;
+5. facilitar un contacto respetuoso;
+6. registrar un diálogo de descubrimiento;
+7. distinguir afinidad revelada de ausencia de afinidad;
+8. bloquear la precalificación sin consentimiento;
+9. precalificar con datos declarados;
+10. transferir únicamente leads calificados.
+
+---
+
+## 13. Definición de terminado
+
+RADAR no estará terminado por tener una API, una pantalla, un clasificador, una integración con Agnes, resultados sintéticos o una conexión teórica con Relaticle.
+
+Estará terminado cuando exista evidencia reproducible del siguiente recorrido real:
 
 ```text
 consulta real
 → conversación pública real
-→ candidato identificado
-→ afinidad explicada
-→ intención estimada
+→ afinidad semántica aparente explicada
 → revisión humana
-→ acercamiento aprobado
-→ respuesta obtenida
-→ precalificación completada
+→ candidato de descubrimiento
+→ acercamiento humano real
+→ respuesta real
+→ diálogo de descubrimiento
+→ afinidad revelada o descartada
+→ consentimiento para continuar
+→ precalificación real
 → lead calificado
-→ ingreso al embudo de Inlak’ech
+→ ingreso controlado al embudo comercial
 ```
 
-Como mínimo, el piloto debe demostrar búsquedas reales, conversaciones reales, clasificación trazable, revisión humana, candidatos aprobados y al menos un caso que alcance el embudo sin modificar manualmente la base de datos.
+---
 
-## Orden de prioridad
+## 14. Mandato operativo
 
-1. descubrimiento real;
-2. persistencia y trazabilidad;
-3. afinidad;
-4. intención;
-5. revisión humana;
-6. acercamiento;
-7. precalificación;
-8. transferencia al embudo;
-9. informes;
-10. generalización futura.
+Toda decisión de producto, arquitectura, interfaz, modelo de datos y prioridad de desarrollo debe demostrar cómo contribuye al recorrido:
 
-No se debe trabajar en SaaS, multiempresa, facturación, autoservicio ni configuración genérica antes de verificar el flujo completo para Inlak’ech.
-
-## Mandato operativo
-
-Debés tratar a RADAR como una herramienta dedicada a conseguir leads calificados para un único cliente: Inlak’ech.
-
-No rediseñes el producto, no lo generalices y no avances hacia SaaS.
-
-Toda decisión debe demostrar cómo ayuda a encontrar conversaciones públicas relevantes, evaluar afinidad e intención, facilitar el contacto humano, precalificar interesados y transferir leads calificados al embudo comercial de Inlak’ech.
+> De la conversación pública a la persona; de la persona al descubrimiento humano; del descubrimiento consentido a la precalificación; y de la precalificación al embudo comercial de Inlak’ech.

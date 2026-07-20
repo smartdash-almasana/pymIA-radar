@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Este documento define la política de búsqueda que RADAR debe usar para localizar conversaciones públicas con contenido sustantivo para Inlak’ech. No es una consulta única ni un clasificador de afinidad. Es el criterio que orienta la exploración, el repertorio de consultas y la selección inicial de conversaciones.
+Este documento define la política de búsqueda que RADAR debe usar para localizar conversaciones públicas con contenido sustantivo para Inlak’ech. No es una consulta única ni un clasificador de personas. Es el criterio que orienta la exploración, el repertorio de consultas y la selección inicial de conversaciones. La afinidad obtenida en esta etapa es únicamente semántica, aparente y provisional, conforme a `RADAR_MASTER_ARCHITECTURE_AND_DEVELOPMENT_DIRECTION.md`.
 
 ## Texto de enganche
 
@@ -53,4 +53,6 @@ Este documento define la política de búsqueda que RADAR debe usar para localiz
 - La búsqueda no puede confundir afinidad con intención comercial.
 - Las consultas que produzcan conversaciones útiles deben conservarse y refinarse como repertorio operativo de RADAR.
 - Las consultas que produzcan ruido deben documentarse, corregirse o descartarse.
-- La selección inicial debe conservar evidencia suficiente para que la clasificación posterior sea explicable.
+- La selección inicial debe conservar evidencia suficiente para que la interpretación posterior sea explicable.
+- El resultado de búsqueda es una conversación candidata a interpretación; no es un lead ni confirma afinidad personal.
+- La identidad pública solo se utiliza después para revisión y eventual contacto humano legítimo.
