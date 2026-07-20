@@ -1,14 +1,102 @@
 <!doctype html>
 <html lang="es">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RADAR · Revisión humana</title><link rel="stylesheet" href="/static/radar.css"></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RADAR · Inlak’ech</title>
+  <link rel="stylesheet" href="/static/radar.css">
+</head>
 <body>
-<header class="topbar"><div><p class="eyebrow">INLAK’ECH</p><h1>RADAR · Revisión humana</h1></div><div class="topbar-actions"><span id="healthBadge" class="badge">Conectando</span><button id="refreshButton" class="button secondary">Actualizar</button></div></header>
-<main class="layout"><aside class="sidebar panel"><div class="sidebar-header"><div><p class="section-label">Conversaciones</p><strong id="conversationCount">0</strong></div><select id="statusFilter"><option value="">Todos los estados</option><option value="review">Pendientes</option><option value="APPROACH_APPROVED">Acercamiento aprobado</option><option value="CONTACTED">Contactadas</option><option value="REPLIED">Respondidas</option><option value="NURTURING">Maduración</option><option value="QUALIFIED">Calificadas</option><option value="PRIORITY_QUALIFIED">Prioritarias</option><option value="DISCARDED">Descartadas</option><option value="DO_NOT_CONTACT">No contactar</option></select></div><input id="searchInput" class="search" type="search" placeholder="Buscar texto, autor o fuente"><div id="conversationList" class="conversation-list"></div></aside>
-<section class="workspace"><div id="emptyState" class="panel empty-state"><p class="eyebrow">EXPEDIENTE</p><h2>Seleccioná una conversación</h2><p>La evaluación, la evidencia, las decisiones y el historial aparecerán acá.</p></div><div id="recordView" class="record hidden">
-<section class="panel record-header"><div><p id="recordSource" class="eyebrow"></p><h2 id="recordTitle"></h2><p id="recordAuthor" class="muted"></p></div><div class="record-actions"><span id="recordStatus" class="badge"></span><a id="recordUrl" class="button secondary" target="_blank" rel="noopener">Ver fuente</a></div></section>
-<section class="panel"><h3>Conversación y contexto</h3><p id="recordText" class="conversation-text"></p><p id="recordContext" class="muted"></p></section>
-<section class="panel"><div class="section-heading"><h3>Evaluación multidimensional</h3><button id="assessButton" class="button">Evaluar ahora</button></div><div id="assessmentEmpty" class="notice">La evaluación se ejecuta bajo demanda y requiere revisión humana.</div><div id="assessmentView" class="hidden"><div class="metric-grid"><div class="metric"><span>Afinidad temática</span><strong id="metricThematic">—</strong></div><div class="metric"><span>Afinidad de valores</span><strong id="metricValues">—</strong></div><div class="metric"><span>Intención</span><strong id="metricIntent">—</strong></div><div class="metric"><span>Calidad de evidencia</span><strong id="metricEvidence">—</strong></div><div class="metric"><span>Riesgo falso positivo</span><strong id="metricRisk">—</strong></div><div class="metric"><span>Acción sugerida</span><strong id="metricAction">—</strong></div></div><h4>Evidencia</h4><ul id="evidenceList"></ul></div></section>
-<section class="panel"><h3>Decisión humana</h3><form id="reviewForm" class="form-grid"><label>Decisión<select id="reviewDecision"><option value="APPROVE_APPROACH">Aprobar acercamiento</option><option value="KEEP_OBSERVING">Mantener en observación</option><option value="DISCARD">Descartar</option><option value="DO_NOT_CONTACT">No contactar</option></select></label><label class="full">Mensaje editable<textarea id="reviewMessage" rows="5" placeholder="Obligatorio al aprobar"></textarea></label><label class="full">Notas internas<textarea id="reviewNotes" rows="3"></textarea></label><div class="full actions"><button class="button">Guardar decisión</button></div></form></section>
-<section class="panel split-panel"><div><h3>Registrar contacto</h3><form id="contactForm" class="form-grid"><label>Canal<input id="contactChannel" required></label><label>Fecha<input id="contactDate" type="datetime-local" required></label><label class="full">Mensaje enviado<textarea id="contactMessage" rows="5" required></textarea></label><label class="full">Notas<textarea id="contactNotes" rows="2"></textarea></label><div class="full actions"><button class="button">Registrar contacto</button></div></form></div><div><h3>Registrar respuesta</h3><form id="replyForm" class="form-grid"><label>Fecha<input id="replyDate" type="datetime-local" required></label><label class="full">Respuesta<textarea id="replyText" rows="6" required></textarea></label><label class="full">Notas<textarea id="replyNotes" rows="2"></textarea></label><div class="full actions"><button class="button">Registrar respuesta</button></div></form></div></section>
-<section class="panel"><h3>Precalificación</h3><form id="qualificationForm" class="form-grid three"><label>Perfil<select id="qualificationProfile"><option value="INVERSOR">Inversor</option><option value="RESIDENTE">Residente</option><option value="ARTIFICE">Artífice</option><option value="NO_DEFINIDO">No definido</option></select></label><label>Capital<select id="qualificationCapital"><option value="MENOS_DE_USD_50000">Menos de USD 50.000</option><option value="USD_50000_A_150000">USD 50.000–150.000</option><option value="MAS_DE_USD_150000">Más de USD 150.000</option><option value="NO_DECLARADO">No declarado</option></select></label><label>Horizonte<select id="qualificationHorizon"><option value="ESTE_MES">Este mes</option><option value="TRES_A_SEIS_MESES">3–6 meses</option><option value="SEIS_A_DOCE_MESES">6–12 meses</option><option value="SOLO_MIRANDO">Solo mirando</option><option value="SIN_DEFINIR">Sin definir</option></select></label><label>Camino declarado<select id="qualificationPath"><option value="">Sin declarar</option><option value="SEMBRADOR_PATRIMONIAL">Sembrador Patrimonial</option><option value="FUNDADOR_CIMENTACION_ESENCIAL">Fundador Esencial</option><option value="FUNDADOR_CIMENTACION_INTEGRAL">Fundador Integral</option><option value="ARTIFICE_ANCLAJE">Artífice de Anclaje</option></select></label><label>Anclaje<select id="qualificationAnchor"><option value="">No corresponde</option><option value="TIERRA">Tierra</option><option value="CAPITAL">Capital</option><option value="TALENTO">Talento</option></select></label><label>Evidencia de anclaje<input id="qualificationAnchorEvidence"></label><label class="full">Motivación<textarea id="qualificationMotivation" rows="3"></textarea></label><div class="checkbox-row full"><label><input id="qualificationCoherent" type="checkbox"> Motivación coherente</label><label><input id="qualificationConsent" type="checkbox"> Consentimiento</label><label><input id="qualificationNextStep" type="checkbox"> Solicita avanzar</label><label><input id="qualificationComplete" type="checkbox"> Información completa</label></div><div class="full actions"><button class="button">Evaluar y guardar</button></div></form><div id="qualificationResult" class="qualification-result hidden"></div></section>
-<section class="panel"><h3>Historial</h3><div id="timeline" class="timeline"></div></section></div></section></main><div id="toast" class="toast hidden"></div><script src="/static/radar.js" defer></script></body></html>
+<header class="topbar">
+  <div>
+    <p class="brand">INLAK’ECH</p>
+    <h1>Conversaciones encontradas</h1>
+  </div>
+  <div class="topbar-actions">
+    <span id="healthBadge" class="status-badge">Conectando…</span>
+    <button id="refreshButton" class="small-button" type="button">Actualizar</button>
+  </div>
+</header>
+
+<main class="review-shell">
+  <section id="emptyState" class="empty-state hidden" aria-live="polite">
+    <p class="empty-mark">✓</p>
+    <h2>Todavía no hay conversaciones para revisar</h2>
+    <p>Cuando RADAR encuentre nuevas conversaciones, van a aparecer acá.</p>
+  </section>
+
+  <article id="conversationView" class="conversation-view hidden">
+    <nav class="conversation-navigation" aria-label="Navegación entre conversaciones">
+      <button id="previousButton" class="nav-button" type="button">← Anterior</button>
+      <p id="progressText" class="progress-text">Conversación 1 de 1</p>
+      <button id="nextButton" class="nav-button" type="button">Siguiente →</button>
+    </nav>
+
+    <section class="conversation-card">
+      <div class="conversation-origin">
+        <div>
+          <p id="sourceText" class="source-text">Encontrada en…</p>
+          <p id="authorDateText" class="author-date"></p>
+        </div>
+        <span id="reviewState" class="review-state">Sin revisar</span>
+      </div>
+
+      <h2 id="conversationTitle" class="conversation-title"></h2>
+      <p id="conversationText" class="conversation-text"></p>
+
+      <div id="contextBlock" class="context-block hidden">
+        <p class="context-label">Contexto</p>
+        <p id="conversationContext"></p>
+      </div>
+
+      <a id="originalLink" class="original-link" target="_blank" rel="noopener noreferrer">
+        Ver conversación original ↗
+      </a>
+    </section>
+
+    <section id="decisionSection" class="decision-section">
+      <h2>¿Qué hacemos con esta conversación?</h2>
+      <div class="decision-buttons">
+        <button id="discardButton" class="decision-button discard" type="button">
+          <strong>No corresponde</strong>
+          <span>No tiene relación suficiente con Inlak’ech.</span>
+        </button>
+        <button id="laterButton" class="decision-button later" type="button">
+          <strong>Dejar para más adelante</strong>
+          <span>Todavía no hay elementos suficientes.</span>
+        </button>
+        <button id="approachButton" class="decision-button approach" type="button">
+          <strong>Vale la pena acercarnos</strong>
+          <span>Merece una mirada humana más cercana.</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="reviewedNotice" class="reviewed-notice hidden" aria-live="polite">
+      <p id="reviewedText"></p>
+    </section>
+
+    <section id="completionNotice" class="completion-notice hidden" aria-live="polite">
+      <strong>Ya revisaste todas las conversaciones disponibles.</strong>
+      <span>Podés volver con los botones Anterior y Siguiente.</span>
+    </section>
+  </article>
+</main>
+
+<dialog id="reviewerDialog" class="reviewer-dialog">
+  <form id="reviewerForm" method="dialog">
+    <h2>¿Quién está revisando?</h2>
+    <p>Lo pedimos una sola vez para dejar constancia de la decisión.</p>
+    <label for="reviewerName">Nombre</label>
+    <input id="reviewerName" autocomplete="name" required maxlength="255">
+    <div class="dialog-actions">
+      <button id="cancelReviewerButton" class="small-button" type="button">Cancelar</button>
+      <button class="confirm-button" type="submit">Continuar</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+<script src="/static/radar.js" defer></script>
+</body>
+</html>

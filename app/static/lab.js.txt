@@ -1,0 +1,75 @@
+const runButton = document.querySelector('#run-experiment');
+const statusNode = document.querySelector('#status');
+const currentNode = document.querySelector('#current-result');
+const experimentsNode = document.querySelector('#experiments');
+const sourceMode = document.querySelector('#source-mode');
+const caseSelector = document.querySelector('#case-selector');
+const caseOptions = document.querySelector('#case-options');
+const freeTextControl = document.querySelector('#free-text-control');
+const freeText = document.querySelector('#free-text');
+const repetitions = document.querySelector('#repetitions');
+
+function esc(value) {
+  return String(value ?? '—').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
+
+function renderResult(result) {
+  currentNode.className = 'result-card';
+  currentNode.innerHTML = `<p><strong>${esc(result.experiment)}</strong> · ${esc(result.case_count)} casos · ${esc(result.total_calls)} llamadas</p><pre>${esc(JSON.stringify(result.records, null, 2))}</pre>`;
+}
+
+function selectedCaseIds() {
+  return [...caseOptions.querySelectorAll('input[type="checkbox"]:checked')].map(item => item.value);
+}
+
+function syncSourceMode() {
+  const isCorpus = sourceMode.value === 'corpus';
+  caseSelector.classList.toggle('hidden', !isCorpus);
+  freeTextControl.classList.toggle('hidden', isCorpus);
+}
+
+async function loadCases() {
+  const response = await fetch('/api/lab/cases');
+  const items = await response.json();
+  caseOptions.innerHTML = items.map((item, index) => `<label><input type="checkbox" value="${esc(item.case_id)}" ${index < 2 ? 'checked' : ''}> ${esc(item.case_id)}</label>`).join('');
+}
+
+async function loadExperiments() {
+  const response = await fetch('/api/lab/experiments');
+  const items = await response.json();
+  experimentsNode.innerHTML = items.length ? items.map(item => `<details class="report"><summary>${esc(item.name)}</summary><pre>${esc(item.content)}</pre></details>`).join('') : '<div class="empty">No hay informes guardados.</div>';
+}
+
+runButton.addEventListener('click', async () => {
+  runButton.disabled = true;
+  statusNode.textContent = 'Ejecutando smoke reducido.';
+  try {
+    const source = sourceMode.value;
+    const payload = {
+      source,
+      case_ids: source === 'corpus' ? selectedCaseIds() : null,
+      input_text: source === 'free_text' ? freeText.value : null,
+      providers: ['agnes', 'gemma'],
+      repetitions: Number(repetitions.value || 1),
+      experiment_id: 'experimento1',
+    };
+    const response = await fetch('/api/lab/experiments', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload),
+    });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.detail || 'No se pudo ejecutar el laboratorio');
+    renderResult(body);
+    statusNode.textContent = `Guardado: ${body.report_path}`;
+    await loadExperiments();
+  } catch (error) {
+    statusNode.textContent = error.message;
+  } finally {
+    runButton.disabled = false;
+  }
+});
+
+sourceMode.addEventListener('change', syncSourceMode);
+syncSourceMode();
+Promise.all([loadCases(), loadExperiments()]).catch(error => { statusNode.textContent = error.message; });

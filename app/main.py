@@ -10,8 +10,11 @@ from app.db.session import init_db
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATE_FILE = BASE_DIR / "templates" / "dashboard.txt"
+LAB_TEMPLATE_FILE = BASE_DIR / "templates" / "lab.txt"
 STYLE_FILE = BASE_DIR / "static" / "radar.css.txt"
 SCRIPT_FILE = BASE_DIR / "static" / "radar.js.txt"
+LAB_STYLE_FILE = BASE_DIR / "static" / "lab.css.txt"
+LAB_SCRIPT_FILE = BASE_DIR / "static" / "lab.js.txt"
 
 
 @asynccontextmanager
@@ -35,6 +38,11 @@ def dashboard() -> HTMLResponse:
     return HTMLResponse(TEMPLATE_FILE.read_text(encoding="utf-8"))
 
 
+@app.get("/lab", response_class=HTMLResponse)
+def lab() -> HTMLResponse:
+    return HTMLResponse(LAB_TEMPLATE_FILE.read_text(encoding="utf-8"))
+
+
 @app.get("/static/radar.css", response_class=PlainTextResponse)
 def radar_css() -> PlainTextResponse:
     return PlainTextResponse(STYLE_FILE.read_text(encoding="utf-8"), media_type="text/css")
@@ -44,6 +52,21 @@ def radar_css() -> PlainTextResponse:
 def radar_js() -> PlainTextResponse:
     return PlainTextResponse(
         SCRIPT_FILE.read_text(encoding="utf-8"),
+        media_type="application/javascript",
+    )
+
+
+@app.get("/static/lab.css", response_class=PlainTextResponse)
+def lab_css() -> PlainTextResponse:
+    return PlainTextResponse(
+        LAB_STYLE_FILE.read_text(encoding="utf-8"), media_type="text/css"
+    )
+
+
+@app.get("/static/lab.js", response_class=PlainTextResponse)
+def lab_js() -> PlainTextResponse:
+    return PlainTextResponse(
+        LAB_SCRIPT_FILE.read_text(encoding="utf-8"),
         media_type="application/javascript",
     )
 

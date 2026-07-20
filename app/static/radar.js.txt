@@ -1,231 +1,282 @@
-const $=id=>document.getElementById(id);
-let conversations=[];
-let selected=null;
+const $ = id => document.getElementById(id);
 
-async function api(url,options={}){
-  const response=await fetch(url,{headers:{'Content-Type':'application/json'},...options});
-  if(!response.ok){
-    let data={};
-    try{data=await response.json();}catch{}
-    throw new Error(data.detail||`Error ${response.status}`);
-  }
-  return response.status===204?null:response.json();
-}
+const PENDING_STATUSES = new Set(['DETECTED', 'ASSESSED', 'REVIEW_PENDING', 'review']);
+const APPROACH_NOTE = 'Preparar un acercamiento humano, respetuoso y relacionado con lo expresado en la conversación.';
 
-function escapeHtml(value){
-  return String(value??'').replace(/[&<>\"]/g,char=>({
-    '&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'
-  })[char]);
-}
+let conversations = [];
+let candidates = [];
+let selectedId = null;
+let working = false;
 
-function showToast(message,isError=false){
-  const toast=$('toast');
-  toast.textContent=message;
-  toast.className=`toast${isError?' error':''}`;
-  setTimeout(()=>toast.className='toast hidden',2600);
-}
-
-async function loadConversations(){
-  try{
-    await api('/health');
-    $('healthBadge').textContent='Operativo';
-    conversations=await api('/api/conversations');
-    renderConversationList();
-    if(selected){
-      selected=conversations.find(item=>item.id===selected.id)||null;
-      if(selected) renderRecord();
-    }
-  }catch(error){
-    $('healthBadge').textContent='Sin conexión';
-    showToast(error.message,true);
-  }
-}
-
-function renderConversationList(){
-  const query=$('searchInput').value.toLowerCase();
-  const status=$('statusFilter').value;
-  const rows=conversations.filter(item=>{
-    const matchesStatus=!status||item.status===status;
-    const values=[item.title,item.text,item.author_name,item.source];
-    const matchesQuery=!query||values.some(value=>(value||'').toLowerCase().includes(query));
-    return matchesStatus&&matchesQuery;
+async function api(url, options = {}) {
+  const response = await fetch(url, {
+    headers: {'Content-Type': 'application/json'},
+    ...options
   });
-  $('conversationCount').textContent=rows.length;
-  $('conversationList').innerHTML=rows.map(item=>`
-    <button class="conversation-item ${selected&&selected.id===item.id?'active':''}" data-id="${item.id}">
-      <strong>${escapeHtml(item.title||'Sin título')}</strong>
-      <span>${escapeHtml(item.source)} · ${escapeHtml(item.status)}</span>
-      <span>${escapeHtml((item.text||'').slice(0,120))}</span>
-    </button>`).join('')||'<p class="muted">Sin conversaciones.</p>';
-  document.querySelectorAll('.conversation-item').forEach(button=>{
-    button.onclick=()=>selectConversation(Number(button.dataset.id));
-  });
+  if (!response.ok) {
+    let data = {};
+    try { data = await response.json(); } catch {}
+    throw new Error(data.detail || `No se pudo completar la acción (${response.status}).`);
+  }
+  return response.status === 204 ? null : response.json();
 }
 
-async function selectConversation(id){
-  selected=conversations.find(item=>item.id===id);
-  renderConversationList();
-  renderRecord();
-  await loadTimeline();
+function candidateFor(conversationId) {
+  return candidates.find(item => item.origin_conversation_id === conversationId) || null;
 }
 
-function renderRecord(){
-  if(!selected)return;
-  $('emptyState').classList.add('hidden');
-  $('recordView').classList.remove('hidden');
-  $('recordSource').textContent=selected.source;
-  $('recordTitle').textContent=selected.title||'Sin título';
-  $('recordAuthor').textContent=selected.author_name||'Autor no identificado';
-  $('recordStatus').textContent=selected.status;
-  $('recordUrl').href=selected.conversation_url;
-  $('recordText').textContent=selected.text;
-  $('recordContext').textContent=selected.context||'';
-  $('assessmentView').classList.add('hidden');
-  $('assessmentEmpty').classList.remove('hidden');
+function isPending(conversation) {
+  return !candidateFor(conversation.id) && PENDING_STATUSES.has(conversation.status);
 }
 
-function showAssessment(result){
-  $('assessmentEmpty').classList.add('hidden');
-  $('assessmentView').classList.remove('hidden');
-  $('metricThematic').textContent=result.thematic_affinity;
-  $('metricValues').textContent=result.values_affinity;
-  $('metricIntent').textContent=result.intent_score;
-  $('metricEvidence').textContent=result.evidence_quality;
-  $('metricRisk').textContent=result.false_positive_risk;
-  $('metricAction').textContent=result.recommended_action;
-  $('evidenceList').innerHTML=(result.evidence_fragments||[])
-    .map(item=>`<li>${escapeHtml(item)}</li>`).join('')||'<li>Sin fragmentos.</li>';
-}
-
-async function loadTimeline(){
-  if(!selected)return;
-  try{
-    const [reviews,events,qualifications]=await Promise.all([
-      api(`/api/conversations/${selected.id}/reviews`),
-      api(`/api/conversations/${selected.id}/engagement-events`),
-      api(`/api/conversations/${selected.id}/qualifications`)
-    ]);
-    const items=[
-      ...reviews.map(item=>({at:item.created_at,title:`Decisión: ${item.decision}`,body:item.reviewer_notes||item.edited_response||''})),
-      ...events.map(item=>({at:item.occurred_at,title:`Evento: ${item.event_type}`,body:item.response_text||item.message_text||item.notes||''})),
-      ...qualifications.map(item=>({at:item.created_at,title:`Precalificación: ${item.traffic_light} · ${item.status}`,body:`Camino: ${item.recommended_path}. ${(item.reasons||[]).join(', ')}`}))
-    ].sort((a,b)=>new Date(b.at)-new Date(a.at));
-    $('timeline').innerHTML=items.map(item=>`
-      <div class="timeline-item">
-        <strong>${escapeHtml(item.title)}</strong>
-        <time>${new Date(item.at).toLocaleString()}</time>
-        <p>${escapeHtml(item.body)}</p>
-      </div>`).join('')||'<p class="muted">Sin historial todavía.</p>';
-  }catch(error){showToast(error.message,true);}
-}
-
-function isoFromInput(id){
-  const value=$(id).value;
-  return value?new Date(value).toISOString():new Date().toISOString();
-}
-
-$('refreshButton').onclick=loadConversations;
-$('searchInput').oninput=renderConversationList;
-$('statusFilter').onchange=renderConversationList;
-
-$('assessButton').onclick=async()=>{
-  try{
-    const result=await api(`/api/conversations/${selected.id}/assess`,{method:'POST'});
-    showAssessment(result);
-    await loadConversations();
-    showToast('Evaluación actualizada');
-  }catch(error){showToast(error.message,true);}
-};
-
-$('reviewForm').onsubmit=async event=>{
-  event.preventDefault();
-  try{
-    await api(`/api/conversations/${selected.id}/reviews`,{
-      method:'POST',
-      body:JSON.stringify({
-        decision:$('reviewDecision').value,
-        edited_response:$('reviewMessage').value||null,
-        reviewer_notes:$('reviewNotes').value||null
-      })
-    });
-    showToast('Decisión guardada');
-    await loadConversations();
-    await loadTimeline();
-  }catch(error){showToast(error.message,true);}
-};
-
-$('contactForm').onsubmit=async event=>{
-  event.preventDefault();
-  try{
-    await api(`/api/conversations/${selected.id}/engagement-events`,{
-      method:'POST',
-      body:JSON.stringify({
-        event_type:'CONTACTED',
-        channel:$('contactChannel').value,
-        message_text:$('contactMessage').value,
-        response_text:null,
-        notes:$('contactNotes').value||null,
-        occurred_at:isoFromInput('contactDate')
-      })
-    });
-    showToast('Contacto registrado');
-    await loadConversations();
-    await loadTimeline();
-  }catch(error){showToast(error.message,true);}
-};
-
-$('replyForm').onsubmit=async event=>{
-  event.preventDefault();
-  try{
-    await api(`/api/conversations/${selected.id}/engagement-events`,{
-      method:'POST',
-      body:JSON.stringify({
-        event_type:'REPLIED',
-        channel:null,
-        message_text:null,
-        response_text:$('replyText').value,
-        notes:$('replyNotes').value||null,
-        occurred_at:isoFromInput('replyDate')
-      })
-    });
-    showToast('Respuesta registrada');
-    await loadConversations();
-    await loadTimeline();
-  }catch(error){showToast(error.message,true);}
-};
-
-$('qualificationForm').onsubmit=async event=>{
-  event.preventDefault();
-  const payload={
-    identity_profile:$('qualificationProfile').value,
-    capital_band:$('qualificationCapital').value,
-    time_horizon:$('qualificationHorizon').value,
-    motivation_text:$('qualificationMotivation').value||null,
-    motivation_coherent:$('qualificationCoherent').checked,
-    artisan_anchor_type:$('qualificationAnchor').value||null,
-    artisan_anchor_evidence:$('qualificationAnchorEvidence').value||null,
-    declared_path_interest:$('qualificationPath').value||'NO_DEFINIDO',
-    consent_to_continue:$('qualificationConsent').checked,
-    requests_next_step:$('qualificationNextStep').checked,
-    minimum_information_complete:$('qualificationComplete').checked,
-    objections:[]
+function sourceName(source) {
+  const names = {
+    reddit: 'Reddit',
+    hackernews: 'Hacker News',
+    github: 'GitHub',
+    polymarket: 'Polymarket',
+    youtube: 'YouTube',
+    facebook: 'Facebook',
+    instagram: 'Instagram',
+    linkedin: 'LinkedIn'
   };
-  try{
-    const result=await api(`/api/conversations/${selected.id}/qualifications`,{
-      method:'POST',body:JSON.stringify(payload)
+  return names[String(source || '').toLowerCase()] || source || 'una fuente pública';
+}
+
+function formatDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('es-AR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+}
+
+function naturalState(conversation) {
+  if (candidateFor(conversation.id)) return 'En acercamiento';
+  const labels = {
+    OBSERVING: 'Para más adelante',
+    DISCARDED: 'No corresponde',
+    DO_NOT_CONTACT: 'No contactar',
+    REVIEWED: 'Revisada'
+  };
+  return labels[conversation.status] || 'Sin revisar';
+}
+
+function selectedConversation() {
+  return conversations.find(item => item.id === selectedId) || null;
+}
+
+function showToast(message, isError = false) {
+  const toast = $('toast');
+  toast.textContent = message;
+  toast.className = `toast${isError ? ' error' : ''}`;
+  window.clearTimeout(showToast.timeoutId);
+  showToast.timeoutId = window.setTimeout(() => {
+    toast.className = 'toast hidden';
+  }, 3200);
+}
+
+function setWorking(value) {
+  working = value;
+  ['discardButton', 'laterButton', 'approachButton', 'previousButton', 'nextButton', 'refreshButton']
+    .forEach(id => { $(id).disabled = value; });
+}
+
+async function loadWorkspace({keepSelection = true} = {}) {
+  try {
+    await api('/health');
+    $('healthBadge').textContent = 'Conectado';
+    $('healthBadge').classList.remove('offline');
+
+    const currentId = keepSelection ? selectedId : null;
+    [conversations, candidates] = await Promise.all([
+      api('/api/conversations'),
+      api('/api/discovery-candidates')
+    ]);
+
+    if (currentId && conversations.some(item => item.id === currentId)) {
+      selectedId = currentId;
+    } else {
+      const firstPending = conversations.find(isPending);
+      selectedId = firstPending?.id || conversations[0]?.id || null;
+    }
+    render();
+  } catch (error) {
+    $('healthBadge').textContent = 'Sin conexión';
+    $('healthBadge').classList.add('offline');
+    showToast(error.message, true);
+  }
+}
+
+function render() {
+  const conversation = selectedConversation();
+  const hasConversations = Boolean(conversation);
+  $('emptyState').classList.toggle('hidden', hasConversations);
+  $('conversationView').classList.toggle('hidden', !hasConversations);
+  if (!conversation) return;
+
+  const index = conversations.findIndex(item => item.id === conversation.id);
+  $('progressText').textContent = `Conversación ${index + 1} de ${conversations.length}`;
+  $('previousButton').disabled = working || index <= 0;
+  $('nextButton').disabled = working || index >= conversations.length - 1;
+
+  $('sourceText').textContent = `Encontrada en ${sourceName(conversation.source)}`;
+  const author = conversation.author_name ? `Publicada por ${conversation.author_name}` : 'Autor no identificado';
+  const date = formatDate(conversation.published_at);
+  $('authorDateText').textContent = date ? `${author} · ${date}` : author;
+
+  $('reviewState').textContent = naturalState(conversation);
+  $('conversationTitle').textContent = conversation.title || 'Conversación sin título';
+  $('conversationText').textContent = conversation.text || '';
+  $('originalLink').href = conversation.conversation_url;
+
+  const context = String(conversation.context || '').trim();
+  const text = String(conversation.text || '').trim();
+  const showContext = Boolean(context && context !== text);
+  $('contextBlock').classList.toggle('hidden', !showContext);
+  $('conversationContext').textContent = showContext ? context : '';
+
+  const pending = isPending(conversation);
+  $('decisionSection').classList.toggle('hidden', !pending);
+  $('reviewedNotice').classList.toggle('hidden', pending);
+  if (!pending) {
+    $('reviewedText').textContent = `Esta conversación ya fue revisada: ${naturalState(conversation)}.`;
+  }
+
+  const pendingCount = conversations.filter(isPending).length;
+  $('completionNotice').classList.toggle('hidden', pendingCount !== 0);
+}
+
+function moveSelection(step) {
+  if (working) return;
+  const conversation = selectedConversation();
+  if (!conversation) return;
+  const index = conversations.findIndex(item => item.id === conversation.id);
+  const target = conversations[index + step];
+  if (target) {
+    selectedId = target.id;
+    render();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+}
+
+function selectNextPendingAfter(conversationId) {
+  const start = conversations.findIndex(item => item.id === conversationId);
+  const ordered = [
+    ...conversations.slice(start + 1),
+    ...conversations.slice(0, Math.max(start, 0))
+  ];
+  const next = ordered.find(isPending);
+  selectedId = next?.id || conversationId;
+  render();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+async function saveDecision(decision, successMessage) {
+  if (working) return;
+  const conversation = selectedConversation();
+  if (!conversation || !isPending(conversation)) return;
+
+  setWorking(true);
+  try {
+    await api(`/api/conversations/${conversation.id}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify({
+        decision,
+        edited_response: null,
+        reviewer_notes: null,
+        reviewer_identity: null
+      })
     });
-    const box=$('qualificationResult');
-    const tone=result.traffic_light==='ROJO'?'red':result.traffic_light==='AMARILLO'?'yellow':'green';
-    box.className=`qualification-result badge ${tone}`;
-    box.textContent=`${result.traffic_light} · ${result.status} · ${result.recommended_path}`;
-    showToast('Precalificación guardada');
-    await loadConversations();
-    await loadTimeline();
-  }catch(error){showToast(error.message,true);}
+    showToast(successMessage);
+    const decidedId = conversation.id;
+    await loadWorkspace({keepSelection: true});
+    selectNextPendingAfter(decidedId);
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    setWorking(false);
+    render();
+  }
+}
+
+async function completedAssessment(conversationId) {
+  const history = await api(`/api/conversations/${conversationId}/assessments/v3`);
+  const existing = [...history].reverse().find(item => item.assessment_status === 'COMPLETED');
+  if (existing) return existing;
+  return api(`/api/conversations/${conversationId}/assessments/v3`, {method: 'POST'});
+}
+
+function requestReviewer() {
+  const stored = localStorage.getItem('radar-reviewer');
+  if (stored) {
+    approveApproach(stored);
+    return;
+  }
+  $('reviewerName').value = '';
+  $('reviewerDialog').showModal();
+  window.setTimeout(() => $('reviewerName').focus(), 0);
+}
+
+async function approveApproach(reviewerIdentity) {
+  if (working) return;
+  const conversation = selectedConversation();
+  if (!conversation || !isPending(conversation)) return;
+
+  setWorking(true);
+  try {
+    const assessment = await completedAssessment(conversation.id);
+    if (assessment.assessment_status !== 'COMPLETED') {
+      throw new Error('No pudimos analizar esta conversación. Quedó sin cambios para que puedas revisarla más tarde.');
+    }
+
+    await api(`/api/conversations/${conversation.id}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify({
+        decision: 'APPROVE_DISCOVERY_CONTACT',
+        edited_response: APPROACH_NOTE,
+        reviewer_notes: null,
+        reviewer_identity: reviewerIdentity
+      })
+    });
+
+    localStorage.setItem('radar-reviewer', reviewerIdentity);
+    showToast('Pasó a la etapa de acercamiento');
+    const decidedId = conversation.id;
+    await loadWorkspace({keepSelection: true});
+    selectNextPendingAfter(decidedId);
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    setWorking(false);
+    render();
+  }
+}
+
+$('previousButton').onclick = () => moveSelection(-1);
+$('nextButton').onclick = () => moveSelection(1);
+$('refreshButton').onclick = () => loadWorkspace({keepSelection: true});
+$('discardButton').onclick = () => saveDecision('DISCARD', 'Conversación descartada');
+$('laterButton').onclick = () => saveDecision('KEEP_OBSERVING', 'Guardada para revisar más adelante');
+$('approachButton').onclick = requestReviewer;
+
+$('reviewerForm').onsubmit = event => {
+  event.preventDefault();
+  const reviewerIdentity = $('reviewerName').value.trim();
+  if (!reviewerIdentity) return;
+  $('reviewerDialog').close();
+  approveApproach(reviewerIdentity);
 };
 
-const localNow=new Date();
-localNow.setMinutes(localNow.getMinutes()-localNow.getTimezoneOffset());
-$('contactDate').value=localNow.toISOString().slice(0,16);
-$('replyDate').value=localNow.toISOString().slice(0,16);
-loadConversations();
+$('cancelReviewerButton').onclick = () => $('reviewerDialog').close();
+
+window.addEventListener('keydown', event => {
+  if ($('reviewerDialog').open) return;
+  if (event.key === 'ArrowLeft') moveSelection(-1);
+  if (event.key === 'ArrowRight') moveSelection(1);
+});
+
+loadWorkspace({keepSelection: false});

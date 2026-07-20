@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Laboratorio RADAR</title>
+  <link rel="stylesheet" href="/static/lab.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <p class="eyebrow">RADAR · laboratorio semántico</p>
+        <h1>Laboratorio experimental neutral</h1>
+        <p>Evalúa texto libre o casos externos versionados. La interfaz no embebe contenido de prueba.</p>
+      </div>
+      <a href="/">Volver a conversaciones</a>
+    </header>
+
+    <section class="controls" aria-labelledby="lab-controls-title">
+      <h2 id="lab-controls-title">Configuración</h2>
+      <label>
+        Fuente
+        <select id="source-mode">
+          <option value="corpus">Corpus externo</option>
+          <option value="free_text">Texto libre</option>
+        </select>
+      </label>
+      <fieldset id="case-selector">
+        <legend>Casos externos</legend>
+        <div id="case-options" class="case-options"></div>
+      </fieldset>
+      <label id="free-text-control" class="hidden">
+        Texto libre
+        <textarea id="free-text" rows="8" placeholder="Ingresá el texto a evaluar"></textarea>
+      </label>
+      <label>
+        Repeticiones
+        <input id="repetitions" type="number" min="1" value="1">
+      </label>
+      <button id="run-experiment">Ejecutar smoke reducido</button>
+      <span id="status">Listo.</span>
+    </section>
+
+    <section>
+      <h2>Resultado actual</h2>
+      <div id="current-result" class="empty">Todavía no se ejecutó una comparación desde esta pantalla.</div>
+    </section>
+
+    <section>
+      <h2>Informes guardados</h2>
+      <div id="experiments" class="reports"></div>
+    </section>
+  </main>
+  <script src="/static/lab.js"></script>
+</body>
+</html>
