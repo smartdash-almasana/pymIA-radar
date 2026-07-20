@@ -1,0 +1,223 @@
+schema_version: "radar-semantic-skill/v1"
+skill_id: "inlakech_affinity_v1"
+version: "1.0.0"
+status: "APPROVED"
+prompt_version: "radar-conversation-assessment/v3+inlakech-affinity-v1"
+
+principle: |
+  El LLM interpreta el sentido.
+  RADAR valida, registra y gobierna.
+  La persona decide.
+
+providers:
+  api: "OpenCode Zen"
+  primary:
+    name: "MiMo"
+    model: "MiMo 2.5 Free"
+    role: "primary_semantic_interpreter"
+  conditional_reviewer:
+    name: "Nemotron"
+    model: "Nemotron 3 Ultra Free"
+    role: "conditional_semantic_reviewer"
+    triggers:
+      - "apparent_affinity is POSSIBLE"
+      - "false_positive_risk is MEDIUM or HIGH"
+      - "uncertainty is MEDIUM or HIGH"
+      - "contradictions are present"
+      - "evidence is thin, ambiguous, ironic, or colloquial"
+      - "recommended_review_action is REVIEW with incomplete context"
+  failover:
+    primary_failure:
+      behavior: "Nemotron 3 Ultra Free acts once as contingency primary."
+      resolution: "EXPLICIT_PROVIDER_FAILOVER"
+      retries: 0
+      human_review_required: true
+    all_failed:
+      behavior: "No semantic assessment is promoted."
+      resolution: "ALL_PROVIDERS_UNAVAILABLE"
+      retries: 0
+      human_review_required: true
+
+identity:
+  project: "Inlak'ech"
+  description: |
+    Inlak'ech is a Yucatan-based regeneration, conscious investment, community,
+    territory, useful beauty, cultural respect, and long-term purposeful building project.
+  radar_role: |
+    RADAR observes public conversations, records apparent semantic affinity with evidence,
+    requires human review, and never authorizes contact or commercial qualification by itself.
+
+affinity_definition:
+  what_it_is: |
+    Apparent affinity is provisional semantic compatibility between the full meaning of a
+    public conversation and Inlak'ech's identity, domains, and discovery mission.
+  what_it_is_not:
+    - "Isolated keyword coincidence."
+    - "A confirmed personal affinity."
+    - "A declared investment capacity."
+    - "A lead, qualification, consent, or contact authorization."
+    - "A psychological, financial, or archetype diagnosis."
+  levels:
+    NONE: "The full meaning does not substantially intersect with Inlak'ech."
+    POSSIBLE: "The full meaning may intersect, but evidence or context is incomplete."
+    CLEAR: "The full meaning intersects clearly and is supported by literal evidence."
+
+apparent_intention:
+  definition: |
+    Apparent intention describes what the conversation seems to be doing in context; it is
+    not consent, not commercial interest, and not permission to contact.
+  levels:
+    NONE: "No relevant action direction is apparent."
+    THEMATIC_SYMPATHY: "The topic is valued, but no action or exploration is apparent."
+    EXPLORATION: "The person asks, compares, evaluates, or seeks information."
+    ACTION_ORIENTED: "The person expresses a concrete next step or explicit willingness to act."
+
+affinity_domains:
+  - CONSCIOUS_INVESTMENT
+  - LEGACY
+  - COMMUNITY
+  - REGENERATION
+  - TERRITORY
+  - USEFUL_BEAUTY
+  - STRATEGIC_PATIENCE
+  - PURPOSEFUL_BUILDING
+  - BELONGING
+  - LONG_TERM
+  - SUSTAINABLE_HOSPITALITY
+  - NON_SPECULATIVE_DEVELOPMENT
+  - ACTIVE_PARTICIPATION
+  - CULTURAL_RESPECT
+  - MEXICO_YUCATAN_CONNECTION
+
+evidence:
+  literal_evidence_required: true
+  definition: "Continuous literal fragments from the conversation title, text, or context."
+  validation_by_radar:
+    - "Normalize whitespace only."
+    - "Check that each fragment appears in the original conversation material."
+    - "Reject non-literal, translated, paraphrased, corrected, or stitched fragments."
+  limitations: |
+    Evidence supports the semantic reading only. It never proves consent, capacity,
+    qualification, archetype, or authorization.
+
+interpretation_guidance:
+  full_context_required: true
+  rules:
+    - "Interpret affinity, intention, irony, colloquial language, and context from the complete conversation meaning."
+    - "Do not use isolated words, regular expressions, lexical matching, or deterministic scoring to infer meaning."
+    - "Topic is not intention. Lexical similarity is not affinity. Apparent affinity is not revealed affinity."
+    - "Irony, jokes, football banter, quotes, criticism, and metaphors must be read in their actual conversational sense."
+    - "When meaning is ambiguous, record uncertainty and missing context instead of forcing a positive reading."
+
+false_positive_risk:
+  levels:
+    LOW: "The meaning, evidence, and context are aligned."
+    MEDIUM: "The topic may fit, but intention or context remains incomplete."
+    HIGH: "The apparent match is likely caused by unrelated topic, irony, noise, or lexical coincidence."
+  radar_use: "RADAR stores and surfaces risk for human review; it does not convert risk into automatic contact."
+
+review_priority:
+  source: "The LLM proposes review_priority from the full contextual interpretation."
+  type: "integer 0-100"
+  radar_bounds:
+    - "Clamp outside values to the allowed 0-100 range."
+    - "Force human review when provider failover occurs."
+    - "Require valid literal evidence for completed positive assessments."
+  prohibited: "No weighted formula, deterministic keyword scoring, regex scoring, or static arithmetic priority model."
+
+recommended_review_action:
+  values:
+    DISCARD: "No apparent affinity or high false-positive reading; do not contact."
+    OBSERVE: "Some signal exists, but context is incomplete; keep for human review without external action."
+    REVIEW: "Evidence merits human review; the person still decides any next step."
+  authority: "Recommendation only; the human reviewer decides."
+
+inferences:
+  allowed:
+    - real_topic
+    - contextual_meaning
+    - apparent_affinity
+    - apparent_affinity_domains
+    - apparent_intention
+    - intention_summary
+    - evidence_fragments
+    - contradictions
+    - missing_context
+    - false_positive_risk
+    - uncertainty
+    - human_review_reason
+    - review_priority
+    - recommended_review_action
+  prohibited:
+    - probable_archetype
+    - declared_capacity
+    - capital_band
+    - participation_path
+    - qualification_status
+    - commercial_lead_score
+    - contact_authorization
+    - consent_inference
+    - psychological_diagnosis
+    - financial_capacity_from_public_profile
+
+contract:
+  json_v3:
+    schema_version: "radar-conversation-assessment/v3"
+    enum_source: "app.schemas.assessment_v3"
+    dynamic_enums_allowed: false
+    fields:
+      - schema_version
+      - assessment_status
+      - real_topic
+      - contextual_meaning
+      - apparent_affinity
+      - apparent_affinity_domains
+      - apparent_intention
+      - intention_summary
+      - evidence_fragments
+      - rejected_evidence_fragments
+      - contradictions
+      - missing_context
+      - false_positive_risk
+      - uncertainty
+      - human_review_reason
+      - review_priority
+      - recommended_review_action
+      - semantic_engine
+      - model_name
+      - safe_error_code
+      - provisional
+      - human_review_required
+      - created_at
+  governance:
+    llm: "Interprets meaning and proposes semantic fields, including review_priority."
+    radar: "Validates enum values, literal evidence, coherence bounds, persistence, and auditability."
+    human: "Decides any external action, contact, publication, discovery follow-up, or discard."
+
+calibration_cases:
+  positive:
+    - id: "regeneration_yucatan_exploration"
+      conversation: "I am looking for a long-term regenerative community in Yucatan where I can participate, not just invest and leave."
+      expected:
+        apparent_affinity: "CLEAR"
+        apparent_intention: "EXPLORATION"
+        false_positive_risk: "LOW"
+        recommended_review_action: "REVIEW"
+  ambiguous:
+    - id: "sustainable_tourism_general_interest"
+      conversation: "Yucatan sustainable tourism looks interesting, but I am only browsing pretty places for a vacation."
+      expected:
+        apparent_affinity: "POSSIBLE"
+        apparent_intention: "THEMATIC_SYMPATHY"
+        false_positive_risk: "MEDIUM"
+        recommended_review_action: "OBSERVE"
+  negative:
+    - id: "football_argentina_france_spain_messi"
+      conversation: "Argentina and France played a crazy final; Spain has talent too, but Messi is still the best."
+      interpretation_basis: "The complete meaning is international football conversation, not community, territory, or regeneration."
+      expected:
+        real_topic: "fútbol internacional"
+        apparent_affinity: "NONE"
+        apparent_intention: "NONE"
+        false_positive_risk: "HIGH"
+        recommended_review_action: "DISCARD"
