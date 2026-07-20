@@ -305,6 +305,11 @@ def create_conversation_assessment_v3(
         ),
         deterministic_resolution=cascade.deterministic_resolution,
         resolution_note=cascade.resolution_note,
+        primary_provider_attempted=cascade.primary_provider_attempted,
+        primary_provider_used=cascade.primary_provider_used,
+        provider_failover=cascade.provider_failover,
+        provider_failure_code=cascade.provider_failure_code,
+        provider_failure_detail=cascade.provider_failure_detail,
         created_at=result.created_at,
     )
     db.add(record)
@@ -351,6 +356,11 @@ def get_conversation_assessment_v3_cascade(
         "gemma_review": record.gemma_review,
         "deterministic_resolution": record.deterministic_resolution,
         "resolution_note": record.resolution_note,
+        "primary_provider_attempted": record.primary_provider_attempted,
+        "primary_provider_used": record.primary_provider_used,
+        "provider_failover": record.provider_failover,
+        "provider_failure_code": record.provider_failure_code,
+        "provider_failure_detail": record.provider_failure_detail,
     }
 
 

@@ -46,6 +46,11 @@ class ConversationAssessmentV3(Base):
     gemma_review: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     deterministic_resolution: Mapped[str | None] = mapped_column(String(60), nullable=True)
     resolution_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    primary_provider_attempted: Mapped[str] = mapped_column(String(30), default="agnes")
+    primary_provider_used: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    provider_failover: Mapped[bool] = mapped_column(Boolean, default=False)
+    provider_failure_code: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    provider_failure_detail: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )

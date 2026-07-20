@@ -38,6 +38,9 @@ def _cascade_result(conversation_id: int) -> CascadeResolutionV1:
         deterministic_resolution="GEMMA_NOT_REQUIRED",
         human_review_required=result.human_review_required,
         resolution_note="Gemma review not required.",
+        primary_provider_attempted="agnes",
+        primary_provider_used="agnes",
+        provider_failover=False,
     )
 
 

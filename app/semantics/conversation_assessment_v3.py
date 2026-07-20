@@ -32,7 +32,7 @@ class DraftRunnerV3(Protocol):
     def __call__(self, text: str) -> ConversationAssessmentDraftV3: ...
 
 
-SEMANTIC_HTTP_TIMEOUT_SECONDS = 60
+SEMANTIC_HTTP_TIMEOUT_SECONDS = 45
 
 
 _ACTION_TERMS = (
@@ -318,7 +318,7 @@ def build_v3_runner(
     api_key: str | None = None,
 ) -> DraftRunnerV3:
     normalized_provider = provider_name.strip().lower()
-    if normalized_provider in {"deepseek", "openai_compatible", "ollama", "agnes"}:
+    if normalized_provider in {"deepseek", "openai_compatible", "ollama", "agnes", "gemma"}:
         if not base_url:
             raise SemanticProviderError(
                 f"{normalized_provider} requires SEMANTIC_LLM_BASE_URL"

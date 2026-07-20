@@ -12,7 +12,8 @@ from app.schemas.assessment_v3 import (
 )
 from app.semantics.conversation_assessment_v3 import (
     InvalidModelOutputError, SEMANTIC_HTTP_TIMEOUT_SECONDS, SemanticProviderError,
-    assess_conversation_v3, build_conversation_input, validate_evidence_fragments,
+    assess_conversation_v3, build_conversation_input, build_v3_runner,
+    validate_evidence_fragments,
 )
 
 CASCADE_SCHEMA_VERSION = "radar-semantic-cascade/v1"
@@ -49,9 +50,15 @@ class CascadeResolutionV1(BaseModel):
     resolved_uncertainty: RiskLevelV3 | None = None
     accepted_additional_evidence: list[str] = Field(default_factory=list)
     disputed_fields: list[str] = Field(default_factory=list)
+    primary_provider_attempted: str = "agnes"
+    primary_provider_used: str | None = None
+    provider_failover: bool = False
+    provider_failure_code: str | None = None
+    provider_failure_detail: str | None = None
     deterministic_resolution: Literal[
         "AGNES_ACCEPTED", "GEMMA_NOT_REQUIRED", "GEMMA_CORRECTIONS_ACCEPTED",
-        "HUMAN_REVIEW_REQUIRED", "GEMMA_UNAVAILABLE",
+        "HUMAN_REVIEW_REQUIRED", "GEMMA_UNAVAILABLE", "EXPLICIT_PROVIDER_FAILOVER",
+        "ALL_PROVIDERS_UNAVAILABLE",
     ]
     human_review_required: bool
     resolution_note: str
@@ -155,6 +162,11 @@ def _base_resolution(agnes: ConversationAssessmentV3Result, **updates) -> Cascad
         resolved_intention=agnes.apparent_intention,
         resolved_false_positive_risk=agnes.false_positive_risk,
         resolved_uncertainty=agnes.uncertainty,
+        primary_provider_attempted="agnes",
+        primary_provider_used="agnes",
+        provider_failover=False,
+        provider_failure_code=None,
+        provider_failure_detail=None,
         deterministic_resolution="GEMMA_NOT_REQUIRED",
         human_review_required=agnes.human_review_required,
         resolution_note="Agnes assessment did not meet any Gemma review trigger.",
@@ -208,37 +220,133 @@ def _resolve_review(
     )
 
 
+def _failover_result(
+    *, agnes: ConversationAssessmentV3Result, gemma: ConversationAssessmentV3Result | None,
+    failure_code: str, failure_detail: str,
+) -> CascadeResolutionV1:
+    if gemma is None or gemma.assessment_status != AssessmentStatusV3.COMPLETED:
+        return _base_resolution(
+            agnes,
+            primary_provider_attempted="agnes",
+            primary_provider_used=None,
+            provider_failover=True,
+            provider_failure_code=failure_code,
+            provider_failure_detail=failure_detail,
+            deterministic_resolution="ALL_PROVIDERS_UNAVAILABLE",
+            human_review_required=True,
+            resolution_note=(
+                f"Agnes {agnes.assessment_status.value} ({failure_code}). "
+                "Gemma primary also failed. No assessment completed."
+            ),
+        )
+    return _base_resolution(
+        gemma,
+        primary_provider_attempted="agnes",
+        primary_provider_used="gemma",
+        provider_failover=True,
+        provider_failure_code=failure_code,
+        provider_failure_detail=failure_detail,
+        deterministic_resolution="EXPLICIT_PROVIDER_FAILOVER",
+        human_review_required=True,
+        resolution_note=(
+            f"Agnes {agnes.assessment_status.value} ({failure_code}). "
+            "Gemma completed as primary evaluation under explicit failover. "
+            "Human review required."
+        ),
+    )
+
+
+def _gemma_primary_runner(*, model_name: str, base_url: str, api_key: str):
+    """Build a V3 runner configured for Gemma as primary assessment provider."""
+    return build_v3_runner(
+        model_name=model_name,
+        provider_name="gemma",
+        base_url=base_url,
+        api_key=api_key,
+    )
+
+
 def assess_conversation_cascade_v1(
     *, conversation_id: int, title: str | None, text: str, context: str | None,
     agnes_enabled: bool, agnes_model_name: str | None, agnes_base_url: str | None,
     agnes_api_key: str | None, gemma_enabled: bool, gemma_model_name: str | None,
     gemma_base_url: str | None, gemma_api_key: str | None,
     agnes_runner=None, gemma_runner: GemmaReviewRunner | None = None,
+    gemma_primary_runner=None,
 ) -> CascadeResolutionV1:
     agnes = assess_conversation_v3(
         conversation_id=conversation_id, title=title, text=text, context=context,
         enabled=agnes_enabled, model_name=agnes_model_name, provider_name="agnes",
         base_url=agnes_base_url, api_key=agnes_api_key, runner=agnes_runner,
     )
-    reasons = gemma_trigger_reasons(agnes)
-    if not reasons:
-        return _base_resolution(agnes)
+
+    # ── Normal flow: Agnes completed ─────────────────────────────────────
+    if agnes.assessment_status == AssessmentStatusV3.COMPLETED:
+        reasons = gemma_trigger_reasons(agnes)
+        if not reasons:
+            return _base_resolution(
+                agnes,
+                primary_provider_attempted="agnes",
+                primary_provider_used="agnes",
+                provider_failover=False,
+            )
+        if not gemma_enabled or not gemma_model_name or not gemma_base_url or not gemma_api_key:
+            return _base_resolution(
+                agnes, gemma_review_triggered=True, gemma_trigger_reasons=reasons,
+                primary_provider_used="agnes", provider_failover=False,
+                deterministic_resolution="GEMMA_UNAVAILABLE", human_review_required=True,
+                resolution_note="Gemma review was required but its configuration is unavailable.",
+            )
+        active_runner = gemma_runner or build_gemma_review_runner(
+            model_name=gemma_model_name, base_url=gemma_base_url, api_key=gemma_api_key,
+        )
+        try:
+            review = active_runner(_gemma_review_prompt(agnes) + "\nCONVERSATION:\n"
+                + build_conversation_input(title=title, text=text, context=context))
+        except (SemanticProviderError, InvalidModelOutputError, ValidationError):
+            return _base_resolution(
+                agnes, gemma_review_triggered=True, gemma_trigger_reasons=reasons,
+                primary_provider_used="agnes", provider_failover=False,
+                deterministic_resolution="GEMMA_UNAVAILABLE", human_review_required=True,
+                resolution_note="Gemma review failed safely; Agnes was preserved without overwrite.",
+            )
+        return _resolve_review(agnes=agnes, review=review, title=title, text=text, context=context)
+
+    # ── Failover flow: Agnes unavailable → Gemma as primary ──────────────
+    failure_code = agnes.safe_error_code or "UNKNOWN_PROVIDER_ERROR"
+    failure_detail = f"{agnes.assessment_status.value}: {failure_code}"
+    if agnes.human_review_reason:
+        failure_detail += f" — {agnes.human_review_reason}"
+
+    # Do not failover if Agnes was disabled rather than failed
+    if failure_code == "SEMANTIC_ENGINE_DISABLED_OR_MODEL_MISSING":
+        return _base_resolution(
+            agnes,
+            primary_provider_attempted="agnes",
+            primary_provider_used=None,
+            provider_failover=False,
+            deterministic_resolution="GEMMA_NOT_REQUIRED",
+            human_review_required=True,
+            resolution_note="Agnes semantic engine is disabled.",
+        )
+
     if not gemma_enabled or not gemma_model_name or not gemma_base_url or not gemma_api_key:
-        return _base_resolution(
-            agnes, gemma_review_triggered=True, gemma_trigger_reasons=reasons,
-            deterministic_resolution="GEMMA_UNAVAILABLE", human_review_required=True,
-            resolution_note="Gemma review was required but its configuration is unavailable.",
+        return _failover_result(
+            agnes=agnes, gemma=None,
+            failure_code=failure_code, failure_detail=failure_detail,
         )
-    active_runner = gemma_runner or build_gemma_review_runner(
-        model_name=gemma_model_name, base_url=gemma_base_url, api_key=gemma_api_key,
+
+    gemma = assess_conversation_v3(
+        conversation_id=conversation_id, title=title, text=text, context=context,
+        enabled=gemma_enabled, model_name=gemma_model_name,
+        provider_name="gemma", base_url=gemma_base_url,
+        api_key=gemma_api_key,
+        runner=(gemma_primary_runner or _gemma_primary_runner(
+            model_name=gemma_model_name, base_url=gemma_base_url, api_key=gemma_api_key,
+        )),
     )
-    try:
-        review = active_runner(_gemma_review_prompt(agnes) + "\nCONVERSATION:\n"
-            + build_conversation_input(title=title, text=text, context=context))
-    except (SemanticProviderError, InvalidModelOutputError, ValidationError):
-        return _base_resolution(
-            agnes, gemma_review_triggered=True, gemma_trigger_reasons=reasons,
-            deterministic_resolution="GEMMA_UNAVAILABLE", human_review_required=True,
-            resolution_note="Gemma review failed safely; Agnes was preserved without overwrite.",
-        )
-    return _resolve_review(agnes=agnes, review=review, title=title, text=text, context=context)
+
+    return _failover_result(
+        agnes=agnes, gemma=gemma,
+        failure_code=failure_code, failure_detail=failure_detail,
+    )
