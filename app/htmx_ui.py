@@ -12,14 +12,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db.session import get_db
-from app.discovery_service import move_candidate
 from app.models.assessment_v3 import ConversationAssessmentV3
 from app.models.conversation import Conversation
 from app.models.discovery import DiscoveryCandidate
 from app.models.engagement import EngagementEvent
 from app.models.review import ReviewDecision
 from app.schemas.review import ReviewDecisionType
-from app.workflow import DiscoveryState, DiscoveryTransitionError
+from app.workflow import DiscoveryState
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -98,6 +97,7 @@ SIGNAL_LANES = [
 
 DECISIONS = {
     "classify_candidate": ("IDENTIFY_DISCOVERY_CANDIDATE", "Persona candidata identificada"),
+    "prepare_public_reply": ("PREPARE_PUBLICATION_REPLY", "Borrador para publicación preparado"),
     "discard": (ReviewDecisionType.DISCARD.value, "Descartada"),
 }
 
@@ -303,17 +303,21 @@ def decision(
     conversation_id: int,
     decision: str = Form(...),
     lead_identity: str = Form(""),
+    publication_reply: str = Form(""),
     internal_note: str = Form(""),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
     error = None
     label = DECISIONS.get(decision, (None, "Decisión registrada"))[1]
     conversation = db.get(Conversation, conversation_id)
-    if conversation is None:
+    if conversation is None or not _is_operational_conversation(conversation):
         raise HTTPException(status_code=404, detail="Conversation not found")
     lead_identity = lead_identity.strip()
+    publication_reply = publication_reply.strip()
     if decision == "classify_candidate" and not lead_identity:
         error = "Para identificar una persona candidata tenés que registrar su identidad pública."
+    elif decision == "prepare_public_reply" and not publication_reply:
+        error = "Para preparar un mensaje tenés que escribir el borrador para la publicación."
     elif decision not in DECISIONS:
         error = "Decisión inválida."
     else:
@@ -338,6 +342,8 @@ def decision(
                 else:
                     candidate.public_name = lead_identity
                 conversation.status = "REVIEW_PENDING"
+            elif decision == "prepare_public_reply":
+                conversation.status = "REVIEW_PENDING"
             elif decision == "discard":
                 conversation.status = "DISCARDED"
             notes = internal_note.strip() or None
@@ -345,7 +351,7 @@ def decision(
                 ReviewDecision(
                     conversation_id=conversation_id,
                     decision=review_type,
-                    edited_response=None,
+                    edited_response=publication_reply or None,
                     reviewer_notes=notes,
                 )
             )

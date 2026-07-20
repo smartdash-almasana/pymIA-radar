@@ -133,7 +133,7 @@ def test_discarded_conversations_are_not_visible_or_filterable() -> None:
     assert 'value="descartado"' not in page.text
 
 
-def test_analysis_decision_form_only_allows_candidate_or_discard() -> None:
+def test_analysis_decision_form_allows_candidate_publication_draft_or_discard() -> None:
     conversation_id = _seed_real_like_conversation()
     with TestClient(app) as client:
         analysis = client.get(f'/analysis/{conversation_id}')
@@ -141,10 +141,14 @@ def test_analysis_decision_form_only_allows_candidate_or_discard() -> None:
     html = analysis.text
     assert 'Identificar persona candidata' in html
     assert 'value="classify_candidate"' in html
+    assert 'Preparar mensaje para la publicación' in html
+    assert 'value="prepare_public_reply"' in html
     assert 'Descartar' in html
     assert 'value="discard"' in html
     assert 'Notas opcionales' in html
     assert 'Identificación pública de la persona' in html
+    assert 'Borrador para dejar en la publicación' in html
+    assert 'publication_reply' in html
     assert 'Mensaje propuesto' not in html
     assert 'proposed_message' not in html
     assert 'Aprobar acercamiento humano' not in html
@@ -185,4 +189,38 @@ def test_classifying_candidate_requires_public_identity_and_sends_no_contact() -
     assert candidate.public_name == 'usuario_publico_relevante'
     assert candidate.discovery_state == 'DISCOVERY_CANDIDATE'
     assert any(item.decision == 'IDENTIFY_DISCOVERY_CANDIDATE' for item in reviews)
+    assert contacts == []
+
+
+def test_prepare_public_reply_requires_draft_and_sends_no_contact() -> None:
+    conversation_id = _seed_real_like_conversation()
+    draft = 'Gracias por compartir esto. ¿Podrías contar un poco más sobre el contexto?'
+    with TestClient(app) as client:
+        missing = client.post(
+            f'/htmx/conversations/{conversation_id}/decision',
+            data={'decision': 'prepare_public_reply', 'internal_note': 'nota'},
+        )
+        assert missing.status_code == 200
+        assert 'borrador para la publicación' in missing.text
+        assert 'No se envió ningún contacto automático' in missing.text
+
+        response = client.post(
+            f'/htmx/conversations/{conversation_id}/decision',
+            data={
+                'decision': 'prepare_public_reply',
+                'publication_reply': draft,
+                'internal_note': 'Nota opcional de revisión.',
+            },
+        )
+        assert response.status_code == 200
+        assert 'Borrador para publicación preparado' in response.text
+        assert 'No se envió ningún contacto automático' in response.text
+
+    from app.models.engagement import EngagementEvent
+    from app.models.review import ReviewDecision
+
+    with SessionLocal() as db:
+        reviews = db.query(ReviewDecision).filter_by(conversation_id=conversation_id).all()
+        contacts = db.query(EngagementEvent).filter_by(conversation_id=conversation_id, event_type='CONTACTED').all()
+    assert any(item.decision == 'PREPARE_PUBLICATION_REPLY' and item.edited_response == draft for item in reviews)
     assert contacts == []
