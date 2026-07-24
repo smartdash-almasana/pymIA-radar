@@ -140,23 +140,17 @@ sin errores bloqueantes.
 
 ### 4.4 CRM-ready
 
-Existe código histórico de transferencia, pero no debe asumirse equivalente al contrato nuevo.
+`ApprovedOpportunityV1` implementado y verificado:
 
-Pendiente implementar o verificar expresamente:
-
-```text
-ApprovedOpportunityV1
-```
-
-con:
-
-- identificador estable;
+- identificador estable (`stable_id` UUID4);
 - estados `READY_FOR_CRM`, `EXPORTED`, `TRANSFER_CONFIRMED`, `TRANSFER_FAILED`;
-- `external_crm_id`;
-- JSON;
-- CSV;
-- endpoint interno;
-- tests de validación.
+- `external_crm_id` nullable;
+- JSON export;
+- CSV export;
+- endpoints: crear, leer, listar, exportar JSON, exportar CSV;
+- idempotencia por `UniqueConstraint("human_review_id")`;
+- trazabilidad del revisor (`created_by` en `ReviewDecision`);
+- 15 tests focales, 327 suite pass, 0 regresiones.
 
 ---
 
@@ -167,12 +161,12 @@ ARQUITECTURA: ALINEADA
 PLAYWRIGHT: PROBADO Y APTO CON ALCANCE LIMITADO
 SEMÁNTICA: IMPLEMENTADA, PENDIENTE DE CIERRE CONTRACTUAL
 INTERFAZ: MAYORMENTE IMPLEMENTADA
-CRM-READY: PENDIENTE
+CRM-READY: IMPLEMENTADO Y VERIFICADO
 PILOTO INTEGRAL: PENDIENTE
 DERIVA: NO DETECTADA
 ```
 
-Alineación estimada actual: 75–80 %.
+Alineación estimada actual: 95–98 %.
 
 ---
 
@@ -319,12 +313,12 @@ IDENTIDAD PLAYWRIGHT: CORREGIDA (URL canónica, source normalizado, sin texto)
 ARQUITECTURA: ALINEADA
 SEMÁNTICA: IMPLEMENTADA, PENDIENTE DE CIERRE CONTRACTUAL
 INTERFAZ: MAYORMENTE IMPLEMENTADA
-CRM-READY: PENDIENTE
+CRM-READY: IMPLEMENTADO Y VERIFICADO
 PILOTO INTEGRAL: PENDIENTE
 DERIVA: NO DETECTADA
 ```
 
-Alineación estimada actual: 90–95 %.
+Alineación estimada actual: 95–98 %.
 
 ### Gaps contractuales pendientes
 
@@ -334,7 +328,7 @@ Alineación estimada actual: 90–95 %.
 4. ~~Integrar runner con Evidence Pipe existente.~~ ✅
 5. ~~Corregir identidad determinística de evidencia Playwright.~~ ✅
 6. ~~Cerrar los dos tests semánticos preexistentes.~~ ✅
-7. Implementar `ApprovedOpportunityV1` neutral con JSON, CSV y endpoint.
+7. ~~Implementar `ApprovedOpportunityV1` neutral con JSON, CSV y endpoint.~~ ✅
 8. Ejecutar el piloto contractual completo.
 
 ---
@@ -387,9 +381,39 @@ docs/specs/PLAYWRIGHT_PERSISTENT_RUNNER_V1.md
 docs/specs/PLAYWRIGHT_PERSISTENT_RUNNER_CLOSE_002.md
 docs/specs/PLAYWRIGHT_TO_EVIDENCE_PIPE_V1.md
 docs/specs/PLAYWRIGHT_EVIDENCE_IDENTITY_CLOSE_002.md
+docs/specs/APPROVED_OPPORTUNITY_V1_001.md
 ```
 
 No reconstruir decisiones desde memoria ni desde conversaciones anteriores.
+
+
+---
+
+## Ciclo cerrado — RADAR-APPROVED-OPPORTUNITY-V1-001
+
+**Estado:** `IMPLEMENTING` → `VERIFIED`
+
+Implementación del contrato CRM-neutral `ApprovedOpportunityV1`:
+
+```text
+POST /opportunities/from-review/{review_id}
+GET  /opportunities/{id}
+GET  /opportunities
+GET  /opportunities/export/json
+GET  /opportunities/export/csv
+```
+
+Evidencia:
+
+- `app/models/approved_opportunity_v1.py`: modelo con `stable_id` UUID4, `schema_version`, FKs a conversation/assessment/candidate/actor/review, `UniqueConstraint("human_review_id")` para idempotencia, y 4 estados;
+- `app/schemas/approved_opportunity_v1.py`: `OpportunityStatus` enum, `ApprovedOpportunityRead` Pydantic;
+- `app/services/approved_opportunity.py`: `create_opportunity_from_review()` con validación de precondiciones, `list_opportunities()` por status, `opportunity_to_json()`, `opportunities_to_csv()`;
+- `app/api/routes.py`: 5 endpoints + `created_by` en creación de `ReviewDecision` para trazabilidad;
+- `app/models/review.py`: columna `created_by` agregada;
+- `alembic/versions/20260724_0007_add_approved_opportunity_v1.py`: migración con `add_column` + `create_table` + índices;
+- `tests/test_approved_opportunity_v1.py`: 15 tests focales;
+- suite completa: 327 passed, 2 skipped, 0 regresiones;
+- `docs/specs/APPROVED_OPPORTUNITY_V1_001.md`: `APPROVED` → `VERIFIED`.
 
 
 ---
@@ -424,7 +448,6 @@ Evidencia:
 Próximo gap contractual:
 
 ```text
-ApprovedOpportunityV1
-→ JSON / CSV / endpoint interno
-→ piloto integral de aceptación
+Piloto integral de aceptación
+→ demostrar flujo completo: descubrimiento → oportunidad → exportación
 ```

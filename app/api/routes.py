@@ -55,6 +55,14 @@ from app.schemas.review import (
 )
 from app.semantics.semantic_cascade_v1 import assess_conversation_cascade_v1
 from app.services.semantic_integration import persist_cascade_assessment
+from app.services.approved_opportunity import (
+    create_opportunity_from_review,
+    get_opportunity,
+    list_opportunities,
+    opportunity_to_json,
+    opportunities_to_csv,
+)
+from app.schemas.approved_opportunity_v1 import ApprovedOpportunityRead, OpportunityStatus
 from app.semantics.llm_classifier import assess_with_optional_llm_details
 from app.workflow import DiscoveryState, DiscoveryTransitionError
 
@@ -357,6 +365,7 @@ def create_review(
             decision=payload.decision.value,
             edited_response=payload.edited_response,
             reviewer_notes=payload.reviewer_notes,
+            created_by=payload.reviewer_identity or None,
         )
         db.add(review)
         db.commit()
@@ -376,6 +385,7 @@ def create_review(
         decision=payload.decision.value,
         edited_response=payload.edited_response,
         reviewer_notes=payload.reviewer_notes,
+        created_by=payload.reviewer_identity or None,
     )
     db.add(review)
     conversation.status = status_by_decision[payload.decision]
@@ -693,3 +703,50 @@ def list_qualifications(conversation_id: int, db: Session = Depends(get_db)):
 @router.post("/qualification/evaluate", response_model=QualificationResult)
 def evaluate_qualification(payload: QualificationInput) -> QualificationResult:
     return qualify_contact(payload)
+
+
+@router.post("/opportunities/from-review/{review_id}", response_model=ApprovedOpportunityRead)
+def create_opportunity(review_id: int, db: Session = Depends(get_db)):
+    opportunity = create_opportunity_from_review(db, review_id)
+    if opportunity is None:
+        raise HTTPException(status_code=400, detail="Cannot create opportunity from this review")
+    return ApprovedOpportunityRead.model_validate(opportunity)
+
+
+@router.get("/opportunities/export/json")
+def export_opportunities_json(db: Session = Depends(get_db)):
+    from fastapi.responses import JSONResponse
+
+    opportunities = list_opportunities(db)
+    data = [opportunity_to_json(o) for o in opportunities]
+    return JSONResponse(content=data)
+
+
+@router.get("/opportunities/export/csv")
+def export_opportunities_csv(db: Session = Depends(get_db)):
+    from fastapi.responses import PlainTextResponse
+
+    opportunities = list_opportunities(db)
+    content = opportunities_to_csv(opportunities)
+    return PlainTextResponse(content=content, media_type="text/csv")
+
+
+@router.get("/opportunities/{opportunity_id}", response_model=ApprovedOpportunityRead)
+def read_opportunity(opportunity_id: int, db: Session = Depends(get_db)):
+    opportunity = get_opportunity(db, opportunity_id)
+    if not opportunity:
+        raise HTTPException(status_code=404, detail="Opportunity not found")
+    return ApprovedOpportunityRead.model_validate(opportunity)
+
+
+@router.get("/opportunities", response_model=list[ApprovedOpportunityRead])
+def list_opportunities_endpoint(
+    status: str | None = None,
+    limit: int = 100,
+    offset: int = 0,
+    db: Session = Depends(get_db),
+):
+    return [
+        ApprovedOpportunityRead.model_validate(o)
+        for o in list_opportunities(db, status=status, limit=limit, offset=offset)
+    ]

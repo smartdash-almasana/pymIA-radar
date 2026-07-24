@@ -13,6 +13,7 @@ def init_db() -> None:
         assessment,
         assessment_v2,
         assessment_v3,
+        approved_opportunity_v1,
         conversation,
         conversation_participant,
         discovery,

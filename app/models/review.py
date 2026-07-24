@@ -11,4 +11,5 @@ class ReviewDecision(Base):
     decision: Mapped[str] = mapped_column(String(50))
     edited_response: Mapped[str | None] = mapped_column(Text, nullable=True)
     reviewer_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
