@@ -162,24 +162,23 @@ PLAYWRIGHT: PROBADO Y APTO CON ALCANCE LIMITADO
 SEMÁNTICA: IMPLEMENTADA, PENDIENTE DE CIERRE CONTRACTUAL
 INTERFAZ: MAYORMENTE IMPLEMENTADA
 CRM-READY: IMPLEMENTADO Y VERIFICADO
-PILOTO INTEGRAL: PENDIENTE
+PILOTO INTEGRAL: VERIFICADO
 DERIVA: NO DETECTADA
 ```
 
-Alineación estimada actual: 95–98 %.
+Alineación estimada actual: ~100 % (técnico). Pendiente cierre contractual de semántica e interfaz.
 
 ---
 
 ## 6. Gaps contractuales pendientes
 
-1. Integrar el persistent runner dentro de RADAR.
-2. Formalizar autor opcional mediante estado:
-   - `RESOLVED`;
-   - `PARTIAL`;
-   - `UNAVAILABLE`.
-3. Cerrar o reconciliar los dos tests semánticos preexistentes.
-4. Implementar `ApprovedOpportunityV1` neutral con JSON, CSV y endpoint.
-5. Ejecutar el piloto contractual completo.
+1. ~~Integrar el persistent runner dentro de RADAR.~~ ✅
+2. ~~Formalizar autor opcional mediante estado (RESOLVED/PARTIAL/UNAVAILABLE).~~ ✅
+3. ~~Cerrar o reconciliar los dos tests semánticos preexistentes.~~ ✅
+4. ~~Implementar `ApprovedOpportunityV1` neutral con JSON, CSV y endpoint.~~ ✅
+5. ~~Ejecutar el piloto contractual completo.~~ ✅
+
+Todos los gaps técnicos del MVP están cerrados. Pendiente cierre contractual formal de semántica e interfaz visual.
 
 ---
 
@@ -314,11 +313,11 @@ ARQUITECTURA: ALINEADA
 SEMÁNTICA: IMPLEMENTADA, PENDIENTE DE CIERRE CONTRACTUAL
 INTERFAZ: MAYORMENTE IMPLEMENTADA
 CRM-READY: IMPLEMENTADO Y VERIFICADO
-PILOTO INTEGRAL: PENDIENTE
+PILOTO INTEGRAL: VERIFICADO
 DERIVA: NO DETECTADA
 ```
 
-Alineación estimada actual: 95–98 %.
+Alineación estimada actual: ~100 % técnico. Pendiente cierre contractual de semántica e interfaz.
 
 ### Gaps contractuales pendientes
 
@@ -329,7 +328,9 @@ Alineación estimada actual: 95–98 %.
 5. ~~Corregir identidad determinística de evidencia Playwright.~~ ✅
 6. ~~Cerrar los dos tests semánticos preexistentes.~~ ✅
 7. ~~Implementar `ApprovedOpportunityV1` neutral con JSON, CSV y endpoint.~~ ✅
-8. Ejecutar el piloto contractual completo.
+8. ~~Ejecutar el piloto contractual completo.~~ ✅
+
+Todos los gaps técnicos del MVP están cerrados. Pendiente cierre contractual formal de semántica e interfaz visual.
 
 ---
 
@@ -382,6 +383,7 @@ docs/specs/PLAYWRIGHT_PERSISTENT_RUNNER_CLOSE_002.md
 docs/specs/PLAYWRIGHT_TO_EVIDENCE_PIPE_V1.md
 docs/specs/PLAYWRIGHT_EVIDENCE_IDENTITY_CLOSE_002.md
 docs/specs/APPROVED_OPPORTUNITY_V1_001.md
+docs/specs/RADAR_PILOT_INTEGRAL_ACCEPTANCE_001.md
 ```
 
 No reconstruir decisiones desde memoria ni desde conversaciones anteriores.
@@ -411,8 +413,8 @@ Evidencia:
 - `app/api/routes.py`: 5 endpoints + `created_by` en creación de `ReviewDecision` para trazabilidad;
 - `app/models/review.py`: columna `created_by` agregada;
 - `alembic/versions/20260724_0007_add_approved_opportunity_v1.py`: migración con `add_column` + `create_table` + índices;
-- `tests/test_approved_opportunity_v1.py`: 15 tests focales;
-- suite completa: 327 passed, 2 skipped, 0 regresiones;
+- `tests/test_approved_opportunity_v1.py`: 18 tests focales;
+- suite completa: 330 passed, 2 skipped, 0 regresiones;
 - `docs/specs/APPROVED_OPPORTUNITY_V1_001.md`: `APPROVED` → `VERIFIED`.
 
 
@@ -450,4 +452,49 @@ Próximo gap contractual:
 ```text
 Piloto integral de aceptación
 → demostrar flujo completo: descubrimiento → oportunidad → exportación
+```
+
+
+---
+
+## Ciclo cerrado — RADAR-PILOT-INTEGRAL-ACCEPTANCE-001
+
+**Estado:** `VERIFIED`
+
+Piloto técnico controlado demostrado:
+
+```text
+NavigationResult
+→ Conversation
+→ ConversationAssessmentV3
+→ PresumptiveCandidate
+→ ReviewDecision aprobatoria
+→ ApprovedOpportunityV1
+→ JSON / CSV
+```
+
+Evidencia:
+
+- `app/services/pilot_integral_acceptance.py`: coordinación mínima que reutiliza servicios existentes y no escribe tablas directamente;
+- `tests/test_pilot_integral_acceptance.py`: 6 pruebas focales;
+- `docs/specs/RADAR_PILOT_INTEGRAL_ACCEPTANCE_001.md`: alcance y reglas;
+- `docs/audits/RADAR_PILOT_INTEGRAL_ACCEPTANCE_REPORT_001.md`: evidencia y veredicto;
+- integración relacionada: 36 passed;
+- suite completa: 336 passed, 2 skipped;
+- regresiones: 0.
+
+Precedencia documentada:
+
+`docs/specs/006_end_to_end_pilot.md` conserva un piloto comercial histórico más amplio. Contacto, respuesta, consentimiento, precalificación, Relaticle y CRM externo no fueron ejecutados y permanecen fuera del alcance de este cierre técnico del MVP.
+
+Estado resultante:
+
+```text
+ARQUITECTURA: ALINEADA
+PLAYWRIGHT / EVIDENCE: VERIFICADO
+SEMÁNTICA V3: VERIFICADA
+REVISIÓN HUMANA / LISTA 1: VERIFICADA
+CRM-READY: VERIFICADO
+PILOTO TÉCNICO INTEGRAL: VERIFICADO
+PILOTO COMERCIAL HISTÓRICO: FUERA DEL MVP ACTUAL
 ```
