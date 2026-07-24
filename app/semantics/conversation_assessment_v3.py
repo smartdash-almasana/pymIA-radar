@@ -281,10 +281,17 @@ def assess_conversation_v3(
             base_url=base_url,
             api_key=api_key,
         )
-        raw_draft = active_runner(
-            build_conversation_input(title=title, text=text, context=context)
+        conversation_input = build_conversation_input(
+            title=title,
+            text=text,
+            context=context,
         )
-        draft = ConversationAssessmentDraftV3.model_validate(raw_draft)
+        try:
+            raw_draft = active_runner(conversation_input)
+            draft = ConversationAssessmentDraftV3.model_validate(raw_draft)
+        except (InvalidModelOutputError, ValidationError, json.JSONDecodeError):
+            raw_draft = active_runner(conversation_input)
+            draft = ConversationAssessmentDraftV3.model_validate(raw_draft)
     except (InvalidModelOutputError, ValidationError, json.JSONDecodeError):
         return _failure_result(
             conversation_id=conversation_id,

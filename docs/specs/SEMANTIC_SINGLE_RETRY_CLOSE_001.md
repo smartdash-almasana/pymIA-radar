@@ -1,7 +1,7 @@
 # RADAR — SEMANTIC SINGLE RETRY CLOSE 001
 
-**Cycle ID:** `RADAR-SEMANTIC-RETRY-CLOSE-001`  
-**Status:** `APPROVED`  
+**Cycle ID:** `RADAR-SEMANTIC-RETRY-CLOSE-001`
+**Status:** `VERIFIED`  
 **Scope:** cierre focal de los dos fallos `TestSingleRetry`  
 **Repository:** `E:\BuenosPasos\inlakech-radar`
 
@@ -209,3 +209,23 @@ GIT_STATUS
 DOCS_UPDATED
 NEXT_RECOMMENDATION
 ```
+
+---
+
+## 11. Evidencia de cierre
+
+```text
+FOCAL_TESTS: 28 passed
+CASCADE_TESTS: 11 passed
+FULL_SUITE: 300 passed, 2 skipped
+REGRESSIONS: 0
+```
+
+Implementación verificada en `app/semantics/conversation_assessment_v3.py`:
+
+- la entrada conversacional se construye una sola vez;
+- el runner se invoca una vez en el caso normal;
+- ante error de formato se ejecuta un único segundo intento;
+- ante un segundo error de formato se devuelve `INVALID_MODEL_OUTPUT`;
+- ante `SemanticProviderError` no se reintenta;
+- no se modificaron cascada, failover, Playwright, Evidence Pipe, interfaz ni modelos.

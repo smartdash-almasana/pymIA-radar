@@ -118,7 +118,6 @@ Existe:
 
 Pendiente:
 
-- reconciliar dos fallos preexistentes de `TestSingleRetry`;
 - ejecutar corpus contractual de aceptación;
 - demostrar al menos 95 % de salidas estructuralmente válidas;
 - demostrar al menos 80 % de concordancia humana en casos claros;
@@ -334,7 +333,7 @@ Alineación estimada actual: 90–95 %.
 3. ~~Cierre técnico: final_url real, screenshot, clasificación de errores.~~ ✅
 4. ~~Integrar runner con Evidence Pipe existente.~~ ✅
 5. ~~Corregir identidad determinística de evidencia Playwright.~~ ✅
-6. Cerrar o reconciliar los dos tests semánticos preexistentes.
+6. ~~Cerrar los dos tests semánticos preexistentes.~~ ✅
 7. Implementar `ApprovedOpportunityV1` neutral con JSON, CSV y endpoint.
 8. Ejecutar el piloto contractual completo.
 
@@ -358,11 +357,21 @@ PlaywrightMCPClient.navigate()
 → evaluación semántica existente
 ```
 
-Los tests semánticos preexistentes (`TestSingleRetry`) siguen siendo el bloqueo más antiguo para el cierre contractual completo. Priorizar:
+El ciclo semántico de reintento único quedó cerrado:
 
 ```text
 CYCLE_ID: RADAR-SEMANTIC-RETRY-CLOSE-001
-OBJETIVO: resolver o aceptar los 2 fallos de TestSingleRetry
+ESTADO: VERIFIED
+EVIDENCIA: 28 focales + 11 cascade + suite completa 300 passed, 2 skipped
+```
+
+El próximo ciclo permitido es integrar y verificar el recorrido:
+
+```text
+Conversation persistida desde Playwright
+→ evaluación semántica V3 existente
+→ persistencia de ConversationAssessmentV3
+→ revisión humana / Lista 1
 ```
 
 ---
