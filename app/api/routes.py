@@ -54,6 +54,7 @@ from app.schemas.review import (
     ReviewRead,
 )
 from app.semantics.semantic_cascade_v1 import assess_conversation_cascade_v1
+from app.services.semantic_integration import persist_cascade_assessment
 from app.semantics.llm_classifier import assess_with_optional_llm_details
 from app.workflow import DiscoveryState, DiscoveryTransitionError
 
@@ -260,61 +261,7 @@ def create_conversation_assessment_v3(
         gemma_base_url=settings.gemini_base_url,
         gemma_api_key=settings.gemini_api_key,
     )
-    result = cascade.agnes_assessment
-    record = ConversationAssessmentV3(
-        conversation_id=conversation.id,
-        schema_version=result.schema_version,
-        assessment_status=result.assessment_status.value,
-        real_topic=result.real_topic,
-        contextual_meaning=result.contextual_meaning,
-        apparent_affinity=(
-            cascade.resolved_affinity.value if cascade.resolved_affinity else None
-        ),
-        apparent_affinity_domains=[item.value for item in cascade.resolved_affinity_domains],
-        apparent_intention=(
-            cascade.resolved_intention.value if cascade.resolved_intention else None
-        ),
-        intention_summary=result.intention_summary,
-        evidence_fragments=list(
-            dict.fromkeys(result.evidence_fragments + cascade.accepted_additional_evidence)
-        ),
-        rejected_evidence_fragments=result.rejected_evidence_fragments,
-        contradictions=result.contradictions,
-        missing_context=result.missing_context,
-        false_positive_risk=(
-            cascade.resolved_false_positive_risk.value
-            if cascade.resolved_false_positive_risk
-            else None
-        ),
-        uncertainty=(
-            cascade.resolved_uncertainty.value if cascade.resolved_uncertainty else None
-        ),
-        human_review_reason=result.human_review_reason,
-        review_priority=result.review_priority,
-        recommended_review_action=result.recommended_review_action.value,
-        semantic_engine=result.semantic_engine,
-        model_name=result.model_name,
-        safe_error_code=result.safe_error_code,
-        provisional=result.provisional,
-        human_review_required=cascade.human_review_required,
-        cascade_schema_version=cascade.schema_version,
-        gemma_review_triggered=cascade.gemma_review_triggered,
-        gemma_trigger_reasons=cascade.gemma_trigger_reasons,
-        gemma_review=(
-            cascade.gemma_review.model_dump(mode="json") if cascade.gemma_review else None
-        ),
-        deterministic_resolution=cascade.deterministic_resolution,
-        resolution_note=cascade.resolution_note,
-        primary_provider_attempted=cascade.primary_provider_attempted,
-        primary_provider_used=cascade.primary_provider_used,
-        provider_failover=cascade.provider_failover,
-        provider_failure_code=cascade.provider_failure_code,
-        provider_failure_detail=cascade.provider_failure_detail,
-        created_at=result.created_at,
-    )
-    db.add(record)
-    db.commit()
-    db.refresh(record)
+    record = persist_cascade_assessment(db, cascade, conversation)
     return ConversationAssessmentV3Result.model_validate(record)
 
 

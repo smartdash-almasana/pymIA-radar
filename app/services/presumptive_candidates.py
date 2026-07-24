@@ -148,7 +148,6 @@ def create_or_update_presumptive_candidate(
         select(PresumptiveCandidate).where(
             PresumptiveCandidate.public_actor_id == actor.id,
             PresumptiveCandidate.conversation_id == conversation.id,
-            PresumptiveCandidate.assessment_id == assessment.id,
         )
     )
     if candidate is None:
@@ -166,6 +165,7 @@ def create_or_update_presumptive_candidate(
         )
         db.add(candidate)
     else:
+        candidate.assessment_id = assessment.id
         candidate.apparent_affinity = assessment.apparent_affinity or candidate.apparent_affinity
         candidate.apparent_intention = assessment.apparent_intention or candidate.apparent_intention
         candidate.false_positive_risk = assessment.false_positive_risk or candidate.false_positive_risk

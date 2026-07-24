@@ -390,3 +390,41 @@ docs/specs/PLAYWRIGHT_EVIDENCE_IDENTITY_CLOSE_002.md
 ```
 
 No reconstruir decisiones desde memoria ni desde conversaciones anteriores.
+
+
+---
+
+## Ciclo cerrado — RADAR-PLAYWRIGHT-SEMANTIC-INTEGRATION-001
+
+**Estado:** `VERIFIED`
+
+Flujo demostrado en campaña controlada:
+
+```text
+NavigationResult
+→ DiscoveryResult
+→ Conversation
+→ evaluación semántica V3
+→ ConversationAssessmentV3
+→ PresumptiveCandidate cuando corresponde
+```
+
+Evidencia:
+
+- `app/services/semantic_integration.py`: servicio focal de integración;
+- `app/api/routes.py`: reutiliza `persist_cascade_assessment()` y evita duplicar el mapeo semántico;
+- `app/services/presumptive_candidates.py`: una reevaluación actualiza el candidato existente para la misma conversación en lugar de crear duplicados conceptuales;
+- candidato persistido de forma durable mediante commit explícito;
+- endpoint V3 exitoso y gate de revisión humana verificados;
+- autor ausente conserva `author_status=UNAVAILABLE` en trazabilidad;
+- pruebas focales relacionadas: 30 passed;
+- suite completa: 312 passed, 2 skipped;
+- regresiones: 0.
+
+Próximo gap contractual:
+
+```text
+ApprovedOpportunityV1
+→ JSON / CSV / endpoint interno
+→ piloto integral de aceptación
+```
