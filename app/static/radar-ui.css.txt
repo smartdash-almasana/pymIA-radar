@@ -30,7 +30,7 @@ button:disabled{opacity:.62;cursor:not-allowed}.candidate-table-wrap{overflow-x:
 @media(max-width:760px){.compact-map .signal-board{grid-template-columns:1fr}.compact-map .signal-lane{min-height:auto}.compact-list .table-wrap{max-height:620px}.pagination{justify-content:space-between}.pagination .btn{flex:0 0 auto}}
 
 /* FIX URGENTE — preclasificación y responsive integral */
-html,body{max-width:100%;overflow-x:hidden}
+html,body{max-width:100%;overflow-x:clip}
 img,svg,video,canvas{max-width:100%;height:auto}
 .app-shell,.analysis-shell,.layout,.content-panel,.signal-map-card,.radar-card,.list-card,.analysis-card,.trace-card,.decision-card,.modal,.table-wrap{max-width:100%;min-width:0}
 .analysis-header>div,.topbar>div,.brand-block,.section-heading>div,.dashboard-topline>div{min-width:0}
@@ -93,3 +93,17 @@ img,svg,video,canvas{max-width:100%;height:auto}
   .trace-grid{grid-template-columns:1fr}
 }
 
+/* FIX — sidebar sticky real en desktop */
+
+@media(min-width:901px){
+  .layout{overflow:visible}
+  .sidebar{
+    position:sticky;
+    top:14px;
+    align-self:start;
+    height:max-content;
+    max-height:calc(100vh - 28px);
+    overflow-y:auto;
+    z-index:5;
+  }
+}
