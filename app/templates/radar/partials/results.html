@@ -1,1 +1,80 @@
-{% if conversations %}<section class="signal-map-card"><div class="section-heading"><div><h2>Mapa visual por señal</h2><p>Conversaciones reales agrupadas por claridad semántica. Sin burbujas superpuestas ni posiciones arbitrarias.</p></div><div class="legend"><span><i class="dot high"></i> Alta</span><span><i class="dot review"></i> Media / revisar</span><span><i class="dot low"></i> Baja o ruido</span></div></div><div class="signal-board" aria-label="Mapa de conversaciones por señal">{% for lane in signal_lanes %}<section class="signal-lane lane-{{ lane.key }}"><header><div><h3>{{ lane.label }}</h3><p>{{ lane.description }}</p></div><strong>{{ conversations | selectattr('affinity_key', 'equalto', lane.key) | list | length }}</strong></header><div class="signal-items">{% for c in conversations %}{% if c.affinity_key == lane.key %}<button class="signal-card" hx-get="/htmx/conversations/{{ c.id }}/modal" hx-target="#modal-root" aria-label="Abrir conversación real: {{ c.title }}"><span class="source-chip">{{ c.source }}</span><strong>{{ c.title }}</strong><small>{{ c.status }} · {{ c.date }}</small><em>{{ c.query }}</em></button>{% endif %}{% endfor %}</div></section>{% endfor %}</div></section><section class="list-card"><div class="section-heading"><div><h2>Lista compacta</h2><p>Conversaciones persistidas por RADAR.</p></div></div><div class="table-wrap"><table><thead><tr><th>Conversación</th><th>Fuente</th><th>Afinidad aparente</th><th>Estado</th><th>Fecha</th><th>Acción</th></tr></thead><tbody>{% for c in conversations %}<tr><td><strong>{{ c.title }}</strong></td><td>{{ c.source }}</td><td><span class="status-pill {{ c.affinity_key }}">{{ c.affinity }}</span></td><td>{{ c.status }}</td><td>{{ c.date }}</td><td><button class="link-button" hx-get="/htmx/conversations/{{ c.id }}/modal" hx-target="#modal-root">Abrir</button></td></tr>{% endfor %}</tbody></table></div></section>{% else %}<section class="empty-state"><div class="empty-icon">⌁</div><h2>No hay conversaciones reales que coincidan con este filtro.</h2><p>No se agregan datos simulados. Cambiá filtros o ejecutá una búsqueda operativa.</p></section>{% endif %}
+{% if total_filtered %}
+<section class="signal-map-card compact-map">
+  <div class="section-heading">
+    <div>
+      <span class="section-kicker">LECTURA VISUAL</span>
+      <h2>Mapa visual por señal</h2>
+      <p>Conversaciones reales agrupadas por claridad semántica. Se muestran hasta 12 prioritarias de {{ total_filtered }} detectadas.</p>
+    </div>
+    <div class="legend">
+      <span><i class="dot high"></i> Alta</span>
+      <span><i class="dot review"></i> Media / revisar</span>
+      <span><i class="dot low"></i> Baja o ruido</span>
+    </div>
+  </div>
+  <div class="signal-board" aria-label="Mapa de conversaciones por señal">
+    {% for lane in signal_lanes %}
+    <section class="signal-lane lane-{{ lane.key }}">
+      <header>
+        <div><h3>{{ lane.label }}</h3><p>{{ lane.description }}</p></div>
+        <strong>{{ board_conversations | selectattr('affinity_key', 'equalto', lane.key) | list | length }}</strong>
+      </header>
+      <div class="signal-items">
+        {% for c in board_conversations %}{% if c.affinity_key == lane.key %}
+        <button class="signal-card" hx-get="/htmx/conversations/{{ c.id }}/modal" hx-target="#modal-root" aria-label="Abrir conversación real: {{ c.title }}">
+          <span class="source-chip">{{ c.source }}</span>
+          <strong>{{ c.title }}</strong>
+          <small>{{ c.status }} · {{ c.date }}</small>
+        </button>
+        {% endif %}{% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+  </div>
+</section>
+<section class="list-card compact-list">
+  <div class="section-heading list-heading">
+    <div>
+      <span class="section-kicker">DETALLE OPERATIVO</span>
+      <h2>Conversaciones encontradas</h2>
+      <p>Página {{ page }} de {{ page_count }} · {{ total_filtered }} resultados.</p>
+    </div>
+  </div>
+  <div class="table-wrap"><table><thead><tr><th>Conversación</th><th>Fuente</th><th>Afinidad</th><th>Estado</th><th>Fecha</th><th></th></tr></thead><tbody>
+  {% for c in conversations %}
+  <tr>
+    <td><strong>{{ c.title }}</strong></td>
+    <td>{{ c.source }}</td>
+    <td><span class="status-pill {{ c.affinity_key }}">{{ c.affinity }}</span></td>
+    <td>{{ c.status }}</td>
+    <td>{{ c.date }}</td>
+    <td><button class="link-button" hx-get="/htmx/conversations/{{ c.id }}/modal" hx-target="#modal-root">Abrir</button></td>
+  </tr>
+  {% endfor %}
+  </tbody></table></div>
+  {% if page_count > 1 %}
+  <nav class="pagination" aria-label="Paginación de conversaciones">
+    <button class="btn ghost" {% if not has_previous %}disabled{% endif %} hx-get="/htmx/results?page={{ page - 1 }}" hx-target="#workspace" hx-include="#filters-form">Anterior</button>
+    <span>Página {{ page }} de {{ page_count }}</span>
+    <button class="btn ghost" {% if not has_next %}disabled{% endif %} hx-get="/htmx/results?page={{ page + 1 }}" hx-target="#workspace" hx-include="#filters-form">Siguiente</button>
+  </nav>
+  {% endif %}
+</section>
+{% else %}
+<section class="empty-state empty-dashboard">
+  <div class="empty-visual" aria-hidden="true">
+    <div class="empty-radar-ring ring-a"></div><div class="empty-radar-ring ring-b"></div><div class="empty-radar-ring ring-c"></div>
+    <div class="empty-radar-sweep"></div><span class="empty-radar-dot dot-a"></span><span class="empty-radar-dot dot-b"></span><span class="empty-radar-core"></span>
+  </div>
+  <div class="empty-copy">
+    <span class="section-kicker">SIN RESULTADOS TODAVÍA</span>
+    <h2>RADAR está listo para comenzar</h2>
+    <p>Ejecutá una búsqueda para incorporar conversaciones públicas nuevas y organizarlas por afinidad, riesgo y prioridad.</p>
+    <div class="empty-actions">
+      <div class="empty-step"><strong>1</strong><span>Buscar conversaciones públicas</span></div>
+      <div class="empty-step"><strong>2</strong><span>Analizar señales y evidencia</span></div>
+      <div class="empty-step"><strong>3</strong><span>Revisar y decidir</span></div>
+    </div>
+  </div>
+</section>
+{% endif %}

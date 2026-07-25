@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db.session import get_db
+from app.discovery.lightweight_live_search import run_lightweight_live_search
 from app.models.assessment_v3 import ConversationAssessmentV3
 from app.models.conversation import Conversation
 from app.models.discovery import DiscoveryCandidate
@@ -259,12 +260,32 @@ def _counts(cards: list[ConversationCard]) -> dict[str, int]:
     }
 
 
-def _context(request: Request, db: Session, status: str = "todos", source: str = "todas", affinity: str = "todas", intent: str = "todas", risk: str = "todos") -> dict:
+def _context(
+    request: Request,
+    db: Session,
+    status: str = "todos",
+    source: str = "todas",
+    affinity: str = "todas",
+    intent: str = "todas",
+    risk: str = "todos",
+    page: int = 1,
+) -> dict:
     cards = _cards(db)
     filtered = _filter(cards, status, source, affinity, intent, risk)
+    page_size = 20
+    total = len(filtered)
+    page_count = max(1, (total + page_size - 1) // page_size)
+    current_page = min(max(page, 1), page_count)
+    start = (current_page - 1) * page_size
     return {
         "request": request,
-        "conversations": filtered,
+        "conversations": filtered[start : start + page_size],
+        "board_conversations": filtered[:12],
+        "total_filtered": total,
+        "page": current_page,
+        "page_count": page_count,
+        "has_previous": current_page > 1,
+        "has_next": current_page < page_count,
         "signal_lanes": SIGNAL_LANES,
         "counts": _counts(cards),
         "filters": {"status": status, "source": source, "affinity": affinity, "intent": intent, "risk": risk},
@@ -277,8 +298,34 @@ def home(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
 
 
 @router.get("/htmx/results", response_class=HTMLResponse)
-def htmx_results(request: Request, status: str = Query("todos"), source: str = Query("todas"), affinity: str = Query("todas"), intent: str = Query("todas"), risk: str = Query("todos"), db: Session = Depends(get_db)) -> HTMLResponse:
-    return templates.TemplateResponse(request, "radar/partials/workspace.html", _context(request, db, status, source, affinity, intent, risk))
+def htmx_results(
+    request: Request,
+    status: str = Query("todos"),
+    source: str = Query("todas"),
+    affinity: str = Query("todas"),
+    intent: str = Query("todas"),
+    risk: str = Query("todos"),
+    page: int = Query(1, ge=1),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request,
+        "radar/partials/workspace.html",
+        _context(request, db, status, source, affinity, intent, risk, page),
+    )
+
+
+@router.post("/htmx/search", response_class=HTMLResponse)
+def htmx_search(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
+    summary = run_lightweight_live_search(db)
+    context = _context(request, db)
+    context["search_message"] = (
+        f"{summary.inserted} conversaciones nuevas incorporadas"
+        if summary.inserted
+        else "No se encontraron conversaciones nuevas en esta ejecución"
+    )
+    context["search_sources"] = ", ".join(summary.sources) if summary.sources else "sin fuentes disponibles"
+    return templates.TemplateResponse(request, "radar/partials/workspace.html", context)
 
 
 @router.get("/htmx/indicators", response_class=HTMLResponse)

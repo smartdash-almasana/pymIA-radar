@@ -1,1 +1,44 @@
-{% include "radar/partials/indicators.html" %}<div class="layout">{% include "radar/partials/filters.html" %}<main><div id="results-area">{% include "radar/partials/results.html" %}</div></main></div>
+<section class="search-command" aria-label="Búsqueda de conversaciones nuevas">
+  <div>
+    <span class="command-kicker">DESCUBRIMIENTO EN VIVO</span>
+    <h2>Encontrá conversaciones públicas nuevas</h2>
+    <p>RADAR consulta fuentes públicas, evita duplicados y guarda los hallazgos para revisión.</p>
+  </div>
+  <button class="btn primary search-live-button"
+          type="button"
+          hx-post="/htmx/search"
+          hx-target="#workspace"
+          hx-swap="innerHTML"
+          hx-disabled-elt="this"
+          hx-indicator="#search-progress">
+    <span class="btn-icon">⌁</span>
+    Buscar conversaciones nuevas
+  </button>
+  <span id="search-progress" class="htmx-indicator search-progress">Buscando en fuentes públicas…</span>
+</section>
+{% if search_message %}
+<section class="search-result-banner" role="status">
+  <strong>{{ search_message }}</strong>
+  <span>Fuentes consultadas: {{ search_sources }}</span>
+</section>
+{% endif %}
+{% include "radar/partials/indicators.html" %}
+<section class="dashboard-shell">
+  <div class="dashboard-topline">
+    <div>
+      <span class="dashboard-kicker">CENTRO DE REVISIÓN</span>
+      <h2>Conversaciones detectadas</h2>
+      <p>Filtrá, abrí y revisá cada señal desde una sola vista.</p>
+    </div>
+    <div class="dashboard-status">
+      <span class="status-dot"></span>
+      <span>Sistema listo para recibir resultados</span>
+    </div>
+  </div>
+  <div class="layout">
+    {% include "radar/partials/filters.html" %}
+    <main class="content-panel">
+      <div id="results-area">{% include "radar/partials/results.html" %}</div>
+    </main>
+  </div>
+</section>
