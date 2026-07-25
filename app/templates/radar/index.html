@@ -1,1 +1,37 @@
-{% extends "radar/base.html" %}{% block body %}<div class="app-shell"><header class="topbar"><div><span class="eyebrow">INLAK’ECH</span><h1>RADAR DE CONVERSACIONES</h1><p>RADAR encuentra y analiza. La persona revisa y decide.</p></div><div class="top-actions"><button class="btn secondary" type="button" disabled>Buscar conversaciones reales desde operación</button><button class="btn primary" hx-get="/htmx/results" hx-target="#workspace" hx-include="#filters-form">Actualizar</button><button class="btn ghost" type="button" data-set-status="revisar">Ver pendientes</button></div></header><div id="workspace">{% include "radar/partials/workspace.html" %}</div><footer class="human-rule"><strong>RADAR encuentra y analiza.</strong><span>La persona revisa y decide.</span></footer></div>{% endblock %}
+{% extends "radar/base.html" %}
+{% block body %}
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand-block">
+      <svg class="brand-logo" viewBox="0 0 440 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="RADAR Inlak'ech">
+        <rect width="440" height="80" rx="12" fill="none"/>
+        <circle cx="44" cy="40" r="34" stroke="url(#g)" stroke-width="3.5" fill="none"/>
+        <circle cx="44" cy="40" r="14" fill="url(#g)"/>
+        <line x1="44" y1="6" x2="44" y2="16" stroke="url(#g)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="44" y1="64" x2="44" y2="74" stroke="url(#g)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="10" y1="40" x2="20" y2="40" stroke="url(#g)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="68" y1="40" x2="78" y2="40" stroke="url(#g)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="16" y1="16" x2="24" y2="24" stroke="url(#g)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="64" y1="56" x2="72" y2="64" stroke="url(#g)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="16" y1="64" x2="24" y2="56" stroke="url(#g)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="64" y1="24" x2="72" y2="16" stroke="url(#g)" stroke-width="2" stroke-linecap="round"/>
+        <text x="94" y="46" font-family="system-ui,-apple-system,sans-serif" font-size="28" font-weight="850" fill="var(--navy,#071f4a)" letter-spacing="-0.03em">RADAR</text>
+        <text x="94" y="64" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="650" fill="var(--cyan,#0dc7c4)" letter-spacing="0.18em">PROSPECCIÓN</text>
+        <defs><linearGradient id="g" x1="0" y1="0" x2="80" y2="80"><stop stop-color="#071f4a"/><stop offset="1" stop-color="#0dc7c4"/></linearGradient></defs>
+      </svg>
+    </div>
+    <div class="hero-copy">
+      <span class="eyebrow">RADAR DE CONVERSACIONES</span>
+      <h1>Señales en vivo</h1>
+      <p>Conversaciones públicas agrupadas por claridad semántica.</p>
+    </div>
+  </header>
+  <div id="workspace">
+    {% include "radar/partials/workspace.html" %}
+  </div>
+  <footer class="human-rule">
+    <span class="footer-dot"></span>
+    <span>RADAR encuentra y analiza. La persona revisa y decide.</span>
+  </footer>
+</div>
+{% endblock %}
