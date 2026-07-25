@@ -6,7 +6,7 @@ Este contrato define cómo RADAR interpreta conversaciones públicas para detect
 
 - **Skill ID:** `inlakech_affinity_v1`
 - **Versión:** `1.0.0`
-- **Estado:** `APPROVED`
+- **Estado:** `VERIFIED`
 - **Archivo normativo:** `config/semantic_skills/inlakech_affinity_v1.yaml`
 - **Contrato técnico validado:** `app.schemas.assessment_v3.ConversationAssessmentV3Result`
 
@@ -124,7 +124,7 @@ Reglas:
 3. Si MiMo falla, Nemotron actúa una sola vez como primario de contingencia.
 4. Ese caso se registra como `EXPLICIT_PROVIDER_FAILOVER` y exige revisión humana.
 5. Si ambos fallan, se registra `ALL_PROVIDERS_UNAVAILABLE`.
-6. No hay reintentos.
+6. Ante salida con formato inválido se permite un único reintento con la misma entrada. No se reintenta ante `SemanticProviderError`. El máximo total es de dos llamadas al runner; un segundo fallo de formato se registra como `INVALID_MODEL_OUTPUT`.
 
 ## Casos de calibración
 

@@ -159,14 +159,14 @@ sin errores bloqueantes.
 ```text
 ARQUITECTURA: ALINEADA
 PLAYWRIGHT: PROBADO Y APTO CON ALCANCE LIMITADO
-SEMÁNTICA: IMPLEMENTADA, PENDIENTE DE CIERRE CONTRACTUAL
-INTERFAZ: MAYORMENTE IMPLEMENTADA
+SEMÁNTICA: IMPLEMENTADA Y CONTRACTUALMENTE CERRADA
+INTERFAZ: CONTRACTUALMENTE CERRADA PARA EL MVP
 CRM-READY: IMPLEMENTADO Y VERIFICADO
 PILOTO INTEGRAL: VERIFICADO
 DERIVA: NO DETECTADA
 ```
 
-Alineación estimada actual: ~100 % (técnico). Pendiente cierre contractual de semántica e interfaz.
+Alineación estimada actual: 100 % para el alcance técnico y contractual del MVP.
 
 ---
 
@@ -177,8 +177,10 @@ Alineación estimada actual: ~100 % (técnico). Pendiente cierre contractual de 
 3. ~~Cerrar o reconciliar los dos tests semánticos preexistentes.~~ ✅
 4. ~~Implementar `ApprovedOpportunityV1` neutral con JSON, CSV y endpoint.~~ ✅
 5. ~~Ejecutar el piloto contractual completo.~~ ✅
+6. ~~Cerrar formalmente el contrato semántico V3.~~ ✅
+7. ~~Cerrar formalmente la interfaz visual del MVP.~~ ✅
 
-Todos los gaps técnicos del MVP están cerrados. Pendiente cierre contractual formal de semántica e interfaz visual.
+Todos los gaps técnicos y contractuales del MVP están cerrados.
 
 ---
 
@@ -310,14 +312,14 @@ PLAYWRIGHT MCP RUNNER: VERIFICADO Y CERRADO TÉCNICAMENTE
 EVIDENCE PIPE: INTEGRADO CON PLAYWRIGHT
 IDENTIDAD PLAYWRIGHT: CORREGIDA (URL canónica, source normalizado, sin texto)
 ARQUITECTURA: ALINEADA
-SEMÁNTICA: IMPLEMENTADA, PENDIENTE DE CIERRE CONTRACTUAL
-INTERFAZ: MAYORMENTE IMPLEMENTADA
+SEMÁNTICA: IMPLEMENTADA Y CONTRACTUALMENTE CERRADA
+INTERFAZ: CONTRACTUALMENTE CERRADA PARA EL MVP
 CRM-READY: IMPLEMENTADO Y VERIFICADO
 PILOTO INTEGRAL: VERIFICADO
 DERIVA: NO DETECTADA
 ```
 
-Alineación estimada actual: ~100 % técnico. Pendiente cierre contractual de semántica e interfaz.
+Alineación estimada actual: 100 % para el alcance técnico y contractual del MVP.
 
 ### Gaps contractuales pendientes
 
@@ -329,45 +331,27 @@ Alineación estimada actual: ~100 % técnico. Pendiente cierre contractual de se
 6. ~~Cerrar los dos tests semánticos preexistentes.~~ ✅
 7. ~~Implementar `ApprovedOpportunityV1` neutral con JSON, CSV y endpoint.~~ ✅
 8. ~~Ejecutar el piloto contractual completo.~~ ✅
+9. ~~Cerrar formalmente el contrato semántico V3.~~ ✅
+10. ~~Cerrar formalmente la interfaz visual del MVP.~~ ✅
 
-Todos los gaps técnicos del MVP están cerrados. Pendiente cierre contractual formal de semántica e interfaz visual.
+Todos los gaps técnicos y contractuales del MVP están cerrados.
 
 ---
 
 ## 9. Próximo paso exacto permitido
 
-```text
-Evidence Pipe integrado
-→ evaluación semántica existente sobre evidencia Playwright
-→ revisión humana / Lista 1
-```
+El MVP técnico y contractual está cerrado. No queda un ciclo de implementación obligatorio dentro del alcance vigente.
 
-La integración con Evidence Pipe está completa. El siguiente paso es usar el flujo completo:
+Próximos movimientos posibles, sujetos a decisión de producto:
 
 ```text
-PlaywrightMCPClient.navigate()
-→ navigation_to_discovery()
-→ persist_discovery_results()
-→ Conversation (persistida con evidencia)
-→ evaluación semántica existente
+merge controlado de la rama
+→ despliegue operativo
+→ piloto comercial real fuera del MVP
+→ evolución post-MVP
 ```
 
-El ciclo semántico de reintento único quedó cerrado:
-
-```text
-CYCLE_ID: RADAR-SEMANTIC-RETRY-CLOSE-001
-ESTADO: VERIFIED
-EVIDENCIA: 28 focales + 11 cascade + suite completa 300 passed, 2 skipped
-```
-
-El próximo ciclo permitido es integrar y verificar el recorrido:
-
-```text
-Conversation persistida desde Playwright
-→ evaluación semántica V3 existente
-→ persistencia de ConversationAssessmentV3
-→ revisión humana / Lista 1
-```
+No ampliar alcance sin una nueva especificación aprobada.
 
 ---
 
@@ -475,7 +459,7 @@ NavigationResult
 
 Evidencia:
 
-- `app/services/pilot_integral_acceptance.py`: coordinación mínima que reutiliza servicios existentes y no escribe tablas directamente;
+- `app/services/pilot_integral_acceptance.py`: coordinación mínima que reutiliza servicios existentes; crea directamente `ReviewDecision` porque todavía no existe un servicio focal reutilizable para esa operación;
 - `tests/test_pilot_integral_acceptance.py`: 6 pruebas focales;
 - `docs/specs/RADAR_PILOT_INTEGRAL_ACCEPTANCE_001.md`: alcance y reglas;
 - `docs/audits/RADAR_PILOT_INTEGRAL_ACCEPTANCE_REPORT_001.md`: evidencia y veredicto;
@@ -497,4 +481,47 @@ REVISIÓN HUMANA / LISTA 1: VERIFICADA
 CRM-READY: VERIFICADO
 PILOTO TÉCNICO INTEGRAL: VERIFICADO
 PILOTO COMERCIAL HISTÓRICO: FUERA DEL MVP ACTUAL
+```
+
+
+---
+
+## Cierre contractual final del MVP
+
+### RADAR-SEMANTIC-CONTRACT-CLOSE-001
+
+**Estado:** `VERIFIED`
+
+- contrato semántico V3 reconciliado con el reintento único vigente;
+- evidencia literal, enums y failover trazable preservados;
+- revisión humana obligatoria;
+- ninguna salida semántica autoriza acción comercial automática.
+
+### RADAR-VISUAL-INTERFACE-CONTRACT-CLOSE-001
+
+**Estado:** `VERIFIED`
+
+- interfaz HTMX conectada a datos reales;
+- conversación, fuente y análisis accesibles;
+- decisiones humanas trazables;
+- descartadas fuera de la bandeja;
+- identificación de candidato y borrador sin envío automático;
+- nombres internos de proveedores ocultos.
+
+Documentos normativos:
+
+```text
+docs/specs/RADAR_SEMANTIC_CONTRACT_CLOSE_001.md
+docs/specs/RADAR_VISUAL_INTERFACE_CONTRACT_CLOSE_001.md
+```
+
+Veredicto final:
+
+```text
+MVP TÉCNICO: CERRADO
+MVP CONTRACTUAL: CERRADO
+SEMÁNTICA: CERRADA
+INTERFAZ VISUAL: CERRADA
+CRM-READY: CERRADO
+PILOTO TÉCNICO: CERRADO
 ```
