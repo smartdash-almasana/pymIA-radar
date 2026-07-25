@@ -28,3 +28,68 @@ button:disabled{opacity:.62;cursor:not-allowed}.candidate-table-wrap{overflow-x:
 .compact-map{padding:18px}.compact-map .section-heading{margin-bottom:14px}.compact-map .signal-board{grid-template-columns:repeat(4,minmax(180px,1fr));gap:12px}.compact-map .signal-lane{min-height:300px;padding:12px}.compact-map .signal-lane header{padding-bottom:8px}.compact-map .signal-lane h3{font-size:15px}.compact-map .signal-lane p{font-size:11px}.compact-map .signal-items{max-height:260px;gap:8px}.compact-map .signal-card{padding:11px;gap:6px}.compact-map .signal-card strong{font-size:13px;line-height:1.28}.compact-map .signal-card small{font-size:11px}.compact-list{margin-top:16px;padding:18px}.compact-list .table-wrap{max-height:760px;overflow:auto}.compact-list table{min-width:760px}.compact-list th{position:sticky;top:0;background:#fff;z-index:2}.compact-list td{padding:11px 10px}.compact-list td:first-child{max-width:520px}.list-heading{margin-bottom:10px}.pagination{display:flex;justify-content:center;align-items:center;gap:14px;padding-top:16px;border-top:1px solid var(--line);margin-top:12px}.pagination span{color:var(--muted);font-size:13px;font-weight:700}.modal{width:min(720px,calc(100% - 32px));max-height:84vh}.modal-body{padding:18px}.sidebar{padding:15px}.sidebar fieldset{margin:13px 0}.radio-row{padding:5px 0}.sidebar select{margin-bottom:9px;padding:9px 10px}.dashboard-topline{margin-bottom:12px}.indicators{gap:10px}.indicators article{min-height:64px;padding:13px 15px}
 @media(max-width:1180px){.compact-map .signal-board{grid-template-columns:repeat(2,minmax(220px,1fr))}}
 @media(max-width:760px){.compact-map .signal-board{grid-template-columns:1fr}.compact-map .signal-lane{min-height:auto}.compact-list .table-wrap{max-height:620px}.pagination{justify-content:space-between}.pagination .btn{flex:0 0 auto}}
+
+/* FIX URGENTE — preclasificación y responsive integral */
+html,body{max-width:100%;overflow-x:hidden}
+img,svg,video,canvas{max-width:100%;height:auto}
+.app-shell,.analysis-shell,.layout,.content-panel,.signal-map-card,.radar-card,.list-card,.analysis-card,.trace-card,.decision-card,.modal,.table-wrap{max-width:100%;min-width:0}
+.analysis-header>div,.topbar>div,.brand-block,.section-heading>div,.dashboard-topline>div{min-width:0}
+.analysis-header h1,.topbar h1,.dashboard-topline h2,.section-heading h2{font-size:clamp(1.75rem,4vw,3rem)}
+.analysis-header p,.topbar p,.conversation-text,.analysis-list dd,.meta-list dd,.trace-grid strong,.detail-grid strong,.signal-card strong,a{overflow-wrap:anywhere;word-break:break-word}
+.form-grid select,.sidebar select{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:13px;color:var(--text)}
+.preclassification-panel{margin-top:22px;padding:20px;border:1px solid var(--line);border-radius:16px;background:var(--surface-2)}
+.preclassification-panel h3,.decision-subtitle{margin:0 0 8px;color:var(--navy)}
+.preclassification-panel p{margin:0 0 16px;color:var(--muted);line-height:1.5}
+.preclassification-grid{margin-top:4px}
+.decision-card form{min-width:0}
+.decision-options label{display:flex;align-items:flex-start;gap:8px;min-width:0}
+.decision-footer{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+.analysis-card h2,.trace-card h2,.decision-card h2{font-size:clamp(1.25rem,2.5vw,1.75rem)}
+.radar-card,.signal-map-card,.signal-board,.empty-dashboard{width:100%;min-width:0}
+
+@media(max-width:900px){
+  .analysis-grid{grid-template-columns:1fr}
+  .trace-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .analysis-header{align-items:flex-start}
+  .analysis-header>.status-pill{align-self:flex-start}
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:static;width:100%}
+  .dashboard-topline,.section-heading{flex-direction:column;align-items:flex-start}
+  .signal-board,.compact-map .signal-board{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media(max-width:640px){
+  .app-shell,.analysis-shell{width:100%;padding:14px 12px 24px}
+  .topbar,.analysis-header{gap:14px;padding-bottom:16px}
+  .top-actions,.decision-footer,.modal-actions{width:100%;flex-direction:column}
+  .top-actions .btn,.decision-footer .btn,.decision-footer a,.modal-actions .btn{width:100%;flex:none}
+  .analysis-card,.trace-card,.decision-card,.signal-map-card,.radar-card,.list-card{padding:16px;border-radius:16px}
+  .trace-grid,.detail-grid,.form-grid,.preclassification-grid{grid-template-columns:1fr}
+  .form-grid .full{grid-column:auto}
+  .decision-options{display:grid;grid-template-columns:1fr}
+  .decision-options label{width:100%;padding:13px}
+  .signal-board,.compact-map .signal-board{grid-template-columns:1fr}
+  .indicators{grid-template-columns:1fr}
+  .dashboard-topline,.section-heading,.search-result-banner{gap:10px}
+  .search-command{padding:18px 16px}
+  .modal-backdrop{padding:10px}
+  .modal{width:100%;max-height:94vh;border-radius:16px}
+  .modal-header,.modal-body,.modal-actions{padding:16px}
+  .table-wrap,.candidate-table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table,.candidate-table{min-width:680px}
+  .preclassification-panel{padding:16px}
+  .empty-dashboard{grid-template-columns:1fr}
+  .empty-copy{padding:24px 18px}
+  .brand-logo{width:min(220px,100%)}
+  .human-rule{padding-inline:4px}
+}
+
+@media(max-width:420px){
+  .app-shell,.analysis-shell{padding-inline:10px}
+  .analysis-card,.trace-card,.decision-card,.signal-map-card,.radar-card,.list-card{padding:14px}
+  .btn{width:100%;padding-inline:12px}
+  .status-pill{max-width:100%}
+  .conversation-text,.reason-box{padding:14px}
+  .trace-grid{grid-template-columns:1fr}
+}
+

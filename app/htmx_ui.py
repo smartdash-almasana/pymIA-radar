@@ -102,6 +102,12 @@ DECISIONS = {
     "discard": (ReviewDecisionType.DISCARD.value, "Descartada"),
 }
 
+HUMAN_AFFINITIES = {"alta", "media", "baja", "nula_ruido"}
+HUMAN_INTENTIONS = {"accion_declarada", "exploracion", "simpatia_tematica", "ninguna"}
+HUMAN_RISKS = {"bajo", "medio", "alto"}
+HUMAN_PRIORITIES = {"alta", "media", "baja", "descartar"}
+
+
 
 
 def _is_operational_conversation(conversation: Conversation) -> bool:
@@ -349,6 +355,10 @@ def decision(
     request: Request,
     conversation_id: int,
     decision: str = Form(...),
+    human_affinity: str = Form(...),
+    human_intention: str = Form(...),
+    human_risk: str = Form(...),
+    human_priority: str = Form(...),
     lead_identity: str = Form(""),
     publication_reply: str = Form(""),
     internal_note: str = Form(""),
@@ -359,9 +369,21 @@ def decision(
     conversation = db.get(Conversation, conversation_id)
     if conversation is None or not _is_operational_conversation(conversation):
         raise HTTPException(status_code=404, detail="Conversation not found")
+    human_affinity = human_affinity.strip()
+    human_intention = human_intention.strip()
+    human_risk = human_risk.strip()
+    human_priority = human_priority.strip()
     lead_identity = lead_identity.strip()
     publication_reply = publication_reply.strip()
-    if decision == "classify_candidate" and not lead_identity:
+    if human_affinity not in HUMAN_AFFINITIES:
+        error = "Seleccioná una afinidad válida."
+    elif human_intention not in HUMAN_INTENTIONS:
+        error = "Seleccioná una intención válida."
+    elif human_risk not in HUMAN_RISKS:
+        error = "Seleccioná un riesgo de falso positivo válido."
+    elif human_priority not in HUMAN_PRIORITIES:
+        error = "Seleccioná una prioridad válida."
+    elif decision == "classify_candidate" and not lead_identity:
         error = "Para identificar una persona candidata tenés que registrar su identidad pública."
     elif decision == "prepare_public_reply" and not publication_reply:
         error = "Para preparar un mensaje tenés que escribir el borrador para la publicación."
@@ -393,7 +415,15 @@ def decision(
                 conversation.status = "REVIEW_PENDING"
             elif decision == "discard":
                 conversation.status = "DISCARDED"
-            notes = internal_note.strip() or None
+            preclassification_note = (
+                "Preclasificación humana: "
+                f"afinidad={human_affinity}; "
+                f"intención={human_intention}; "
+                f"riesgo_falso_positivo={human_risk}; "
+                f"prioridad={human_priority}"
+            )
+            free_note = internal_note.strip()
+            notes = f"{preclassification_note}\n{free_note}" if free_note else preclassification_note
             db.add(
                 ReviewDecision(
                     conversation_id=conversation_id,
