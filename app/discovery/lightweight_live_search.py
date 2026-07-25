@@ -104,6 +104,115 @@ def _search_hackernews(client: httpx.Client, query: str, limit: int) -> list[dic
     return rows
 
 
+def _search_github(client: httpx.Client, query: str, limit: int) -> list[dict[str, Any]]:
+    response = client.get(
+        "https://api.github.com/search/issues",
+        params={"q": f"{query} in:title,body is:issue", "sort": "created", "order": "desc", "per_page": limit},
+        headers={"Accept": "application/vnd.github+json", "User-Agent": "InlakechRadar/1.0"},
+    )
+    response.raise_for_status()
+    rows: list[dict[str, Any]] = []
+    for item in response.json().get("items", []):
+        external_id = str(item.get("id") or "").strip()
+        title = str(item.get("title") or "").strip()
+        url = str(item.get("html_url") or "").strip()
+        if not external_id or not title or not url:
+            continue
+        user = item.get("user") or {}
+        repo_url = str(item.get("repository_url") or "")
+        rows.append(
+            {
+                "source": "github",
+                "external_id": external_id,
+                "conversation_url": url,
+                "author_name": user.get("login"),
+                "title": title,
+                "text": str(item.get("body") or title),
+                "context": repo_url.rsplit("/", 1)[-1] if repo_url else "GitHub public issue",
+                "published_at": datetime.fromisoformat(str(item.get("created_at")).replace("Z", "+00:00")) if item.get("created_at") else None,
+                "query_origin": query,
+                "engagement": {"comments": item.get("comments")},
+            }
+        )
+    return rows
+
+
+def _search_stackexchange(client: httpx.Client, query: str, limit: int) -> list[dict[str, Any]]:
+    response = client.get(
+        "https://api.stackexchange.com/2.3/search/advanced",
+        params={"q": query, "site": "travel", "sort": "creation", "order": "desc", "pagesize": limit, "filter": "withbody"},
+    )
+    response.raise_for_status()
+    rows: list[dict[str, Any]] = []
+    for item in response.json().get("items", []):
+        external_id = str(item.get("question_id") or "").strip()
+        title = str(item.get("title") or "").strip()
+        url = str(item.get("link") or "").strip()
+        if not external_id or not title or not url:
+            continue
+        owner = item.get("owner") or {}
+        rows.append(
+            {
+                "source": "stackexchange",
+                "external_id": external_id,
+                "conversation_url": url,
+                "author_name": owner.get("display_name"),
+                "title": title,
+                "text": str(item.get("body") or title),
+                "context": "Stack Exchange public question",
+                "published_at": _parse_epoch(item.get("creation_date")),
+                "query_origin": query,
+                "engagement": {"score": item.get("score"), "answers": item.get("answer_count"), "views": item.get("view_count")},
+            }
+        )
+    return rows
+
+
+def _search_bluesky(client: httpx.Client, query: str, limit: int) -> list[dict[str, Any]]:
+    response = client.get(
+        "https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts",
+        params={"q": query, "limit": limit, "sort": "latest"},
+        headers={"User-Agent": "InlakechRadar/1.0"},
+    )
+    response.raise_for_status()
+    rows: list[dict[str, Any]] = []
+    for post in response.json().get("posts", []):
+        uri = str(post.get("uri") or "").strip()
+        record = post.get("record") or {}
+        author = post.get("author") or {}
+        text = str(record.get("text") or "").strip()
+        handle = str(author.get("handle") or "").strip()
+        if not uri or not text or not handle:
+            continue
+        rkey = uri.rsplit("/", 1)[-1]
+        indexed_at = post.get("indexedAt") or record.get("createdAt")
+        published_at = None
+        if indexed_at:
+            try:
+                published_at = datetime.fromisoformat(str(indexed_at).replace("Z", "+00:00"))
+            except ValueError:
+                published_at = None
+        rows.append(
+            {
+                "source": "bluesky",
+                "external_id": uri,
+                "conversation_url": f"https://bsky.app/profile/{handle}/post/{rkey}",
+                "author_name": author.get("displayName") or handle,
+                "title": text[:120],
+                "text": text,
+                "context": "Bluesky public post",
+                "published_at": published_at,
+                "query_origin": query,
+                "engagement": {
+                    "likes": post.get("likeCount"),
+                    "replies": post.get("replyCount"),
+                    "reposts": post.get("repostCount"),
+                },
+            }
+        )
+    return rows
+
+
 def run_lightweight_live_search(
     db: Session,
     *,
@@ -118,6 +227,9 @@ def run_lightweight_live_search(
             for source_name, searcher in (
                 ("reddit", _search_reddit),
                 ("hackernews", _search_hackernews),
+                ("github", _search_github),
+                ("stackexchange", _search_stackexchange),
+                ("bluesky", _search_bluesky),
             ):
                 try:
                     rows = searcher(client, query, per_source_limit)
