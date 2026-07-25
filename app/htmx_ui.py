@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db.session import get_db
-from app.discovery.lightweight_live_search import run_lightweight_live_search
+from app.discovery.lightweight_live_search import is_relevant_conversation, run_lightweight_live_search
 from app.models.assessment_v3 import ConversationAssessmentV3
 from app.models.conversation import Conversation
 from app.models.discovery import DiscoveryCandidate
@@ -114,7 +114,7 @@ def _is_operational_conversation(conversation: Conversation) -> bool:
         return False
     if "example.com" in url or "iana.org/domains/example" in url:
         return False
-    return True
+    return is_relevant_conversation(conversation)
 
 def _label_source(value: str | None) -> str:
     labels = {"reddit": "Reddit", "facebook": "Facebook", "linkedin": "LinkedIn", "instagram": "Instagram", "x": "X", "github": "GitHub", "youtube": "YouTube", "hackernews": "Hacker News"}

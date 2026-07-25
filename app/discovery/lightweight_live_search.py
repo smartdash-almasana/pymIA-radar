@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import UTC, datetime
+import re
 from typing import Any
 
 import httpx
@@ -20,11 +21,48 @@ class LiveSearchSummary:
 
 
 DEFAULT_QUERIES = (
-    "Yucatan",
-    "Mexico investment",
-    "sustainable tourism",
-    "real estate Mexico",
+    'Yucatan real estate investment risk',
+    'Chichen Itza property investment',
+    'Mexico sustainable tourism investment',
+    'Yucatan legal security real estate',
+    'Mexico community impact investment',
 )
+
+_TERRITORY = re.compile(r'\b(yucatan|chichen itza|riviera maya|quintana roo|mexico|m[eé]xico)\b', re.I)
+_INVESTMENT = re.compile(r'\b(invest|investment|investor|invertir|inversi[oó]n|real estate|property|propiedad|inmobiliari[oa]|capital|return|rentabilidad|roi)\b', re.I)
+_DUE_DILIGENCE = re.compile(r'\b(risk|legal|ownership|title|governance|timeline|return|security|riesgo|legal|propiedad|t[ií]tulo|gobernanza|plazo|rentabilidad|seguridad jur[ií]dica|compar|evaluat|consider|duda|pregunta|worth it|conviene)\b', re.I)
+_NOISE = re.compile(r'\b(programming|software|api|bug|javascript|python|developer|job|hiring|football|soccer|recipe|weather|gaming|crypto token|nft)\b', re.I)
+
+
+def relevance_score_payload(payload: dict[str, Any]) -> int:
+    text = ' '.join(str(payload.get(k) or '') for k in ('title', 'text', 'context', 'query_origin'))
+    if _NOISE.search(text):
+        return -10
+    score = 0
+    if _TERRITORY.search(text):
+        score += 3
+    if _INVESTMENT.search(text):
+        score += 3
+    if _DUE_DILIGENCE.search(text):
+        score += 3
+    if '?' in text:
+        score += 1
+    if len(text) >= 140:
+        score += 1
+    return score
+
+
+def is_relevant_payload(payload: dict[str, Any]) -> bool:
+    return relevance_score_payload(payload) >= 7
+
+
+def is_relevant_conversation(conversation: Conversation) -> bool:
+    return is_relevant_payload({
+        'title': conversation.title,
+        'text': conversation.text,
+        'context': conversation.context,
+        'query_origin': conversation.query_origin,
+    })
 
 
 def _parse_epoch(value: Any) -> datetime | None:
@@ -239,10 +277,13 @@ def run_lightweight_live_search(
                 if rows and source_name not in successful_sources:
                     successful_sources.append(source_name)
 
+    relevant_rows = [payload for payload in fetched_rows if is_relevant_payload(payload)]
+    relevant_rows.sort(key=relevance_score_payload, reverse=True)
+
     inserted = 0
     duplicates = 0
     seen: set[tuple[str, str]] = set()
-    for payload in fetched_rows:
+    for payload in relevant_rows[:10]:
         key = (payload["source"], payload["external_id"])
         if key in seen:
             duplicates += 1
