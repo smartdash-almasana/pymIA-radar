@@ -20,9 +20,10 @@ class LiveSearchSummary:
 
 
 DEFAULT_QUERIES = (
-    "inversion inmobiliaria yucatan",
-    "invertir en mexico turismo sustentable",
-    "chichen itza real estate investment",
+    "Yucatan",
+    "Mexico investment",
+    "sustainable tourism",
+    "real estate Mexico",
 )
 
 
